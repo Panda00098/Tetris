@@ -16,10 +16,10 @@ def draw():
     screen.clear()
     for y, radek in enumerate(pole):
         for x, barva in enumerate(radek):
-        screen.draw.line(y * pocet_pixelu, x * pocet_pixelu, (255, 255, 255))
+            screen.draw.line(y * pocet_pixelu, x * pocet_pixelu, (255, 255, 255))
     for x, radek in enumerate(pole):
         for y, barva in enumerate(radek):
-        screen.draw.line(x * pocet_pixelu, y * pocet_pixelu, (255, 255, 255))
+            screen.draw.line(x * pocet_pixelu, y * pocet_pixelu, (255, 255, 255))
 
 
 #    def vyber_kostky():
@@ -35,4 +35,5 @@ def draw():
 #             kostky = kostky.append(v)
 #             u = kostky.pop(0)
 
+pgzrun.go()
 
