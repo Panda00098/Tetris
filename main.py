@@ -43,9 +43,9 @@ def on_mouse_down():
 
 def on_key_down(key):
     global sirka0
-    if key == "a":
+    if key == keys.A or key == keys.LEFT:
         sirka0 = sirka0 - 1
-    if key == "d":
+    if key == keys.D or key == keys.RIGHT:
         sirka0 = sirka0 + 1
     print(sirka0)
 
