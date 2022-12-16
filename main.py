@@ -1,6 +1,6 @@
 # import random
 import pgzrun
-from pgzero.clock import clock
+import sys
 
 sirka = 15
 vyska = 21
@@ -10,13 +10,7 @@ kostka = []
 for a in range(4):
     kostka.append([0] * 4)
 vyska0 = 0
-vyska1 = 1
-vyska2 = 2
-vyska3 = 3
 sirka0 = 5
-sirka1 = 6
-sirka2 = 7
-sirka3 = 8
 kostka[0][1] = 1
 kostka[0][2] = 1
 kostka[1][1] = 1
@@ -34,15 +28,28 @@ pole[2][3] = 1
 
 
 def padani():
-    vyska0 = +1
-    vyska1 = +1
-    vyska2 = +1
-    vyska3 = +1
+    global vyska0
+    vyska0 = vyska0 + 1
+    print("provedení počtů", vyska0)
 
-
+neomezenarychlost = 0
 def on_mouse_down():
-    clock.schedule_interval(padani, 0.5)
-    clock.schedule_interval(draw, 0.5)
+    global neomezenarychlost
+    if neomezenarychlost == 0:
+        clock.schedule_interval(padani, 0.5)
+        clock.schedule_interval(draw, 0.5)
+        neomezenarychlost = 1
+
+
+def on_key_down(key):
+    global sirka0
+    if key == "a":
+        sirka0 = sirka0 - 1
+    if key == "d":
+        sirka0 = sirka0 + 1
+    print(sirka0)
+
+
 
 
 def draw():
@@ -55,27 +62,27 @@ def draw():
                 barva_kostky = (255, 255, 255)
             screen.draw.filled_rect(r, barva_kostky)
     if kostka[1][1] == 1:
-        test = Rect((sirka1 * pocet_pixelu, (vyska1 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+        test = Rect(((sirka0 + 1) * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
         screen.draw.filled_rect(test, (255, 255, 255))
-        test = Rect((sirka1 * pocet_pixelu, vyska1 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+        test = Rect(((sirka0 + 1) * pocet_pixelu, (vyska0 + 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
         screen.draw.filled_rect(test, (255, 0, 255))
     if kostka[1][2] == 1:
-        test = Rect((sirka2 * pocet_pixelu, (vyska1 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+        test = Rect(((sirka0 + 2) * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
         screen.draw.filled_rect(test, (255, 255, 255))
-        test = Rect((sirka2 * pocet_pixelu, vyska1 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+        test = Rect(((sirka0 + 2) * pocet_pixelu, (vyska0 + 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
         screen.draw.filled_rect(test, (255, 0, 255))
     if kostka[0][1] == 1:
-        test = Rect((sirka1 * pocet_pixelu, (vyska0 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+        test = Rect(((sirka0 + 1) * pocet_pixelu, (vyska0 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
         screen.draw.filled_rect(test, (255, 255, 255))
-        test = Rect((sirka1 * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+        test = Rect(((sirka0 + 1) * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
         screen.draw.filled_rect(test, (255, 0, 255))
     if kostka[0][2] == 1:
-        test = Rect((sirka2 * pocet_pixelu, (vyska0 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+        test = Rect(((sirka0 + 2) * pocet_pixelu, (vyska0 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
         screen.draw.filled_rect(test, (255, 255, 255))
-        test = Rect((sirka2 * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+        test = Rect(((sirka0 + 2) * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
         screen.draw.filled_rect(test, (255, 0, 255))
-    if vyska1 == 15:
-        exit()
+    if vyska0 == 19:
+        clock.unschedule(padani)
 
 
 
