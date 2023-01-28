@@ -1,5 +1,7 @@
 # import random
 import pgzrun
+from pgzero import clock, screen
+from pygame import draw, keys, Rect
 
 sirka = 15
 vyska = 11  #21
@@ -88,7 +90,7 @@ def otoc_kostku(smer):
     if smer == 1:
         for otackyx in range(4):
             for otackyy in range(4):
-                kostka_otaceni[otackyx][otackyy] = kostka[otackyy][otackyx]!!!!!!!!!!!!!!!!!!!!!!
+                kostka_otaceni[otackyx][otackyy] = kostka[otackyy][otackyx]
     if smer == -1:
         for otackyx in range(3, -1, -1):
             for otackyy in range(3, -1, -1):
