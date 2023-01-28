@@ -1,7 +1,5 @@
 # import random
-import pgzrun, pgzero
-from pygame import draw, keys, Rect
-from pgzero import clock, screen
+import pgzrun
 
 sirka = 15
 vyska = 11  # 21
