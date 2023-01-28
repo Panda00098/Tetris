@@ -1,14 +1,14 @@
 # import random
 import pgzrun
-import sys
 
 sirka = 15
-vyska = 21
+vyska = 11  #21
 pocet_pixelu = 25
 
 kostka = []
 for a in range(4):
     kostka.append([0] * 4)
+
 vyska0 = 0
 sirka0 = 5
 kostka[0][1] = 1
@@ -16,7 +16,14 @@ kostka[0][2] = 1
 kostka[1][1] = 1
 kostka[1][2] = 1
 
-print(kostka)
+def kostka_vyber():
+    global vyska0
+    global sirka0
+    vyska0 = 0
+    sirka0 = 5
+
+
+
 
 pole = []
 for y in range(vyska):
@@ -24,7 +31,8 @@ for y in range(vyska):
     for x in range(sirka):
         radek.append(0)
     pole.append(radek)
-pole[2][3] = 1
+
+
 
 
 def padani():
@@ -32,22 +40,85 @@ def padani():
     vyska0 = vyska0 + 1
     print("provedení počtů", vyska0)
 
+
+def ukladani():
+    if not can_move(vyska0 + 1, sirka0):
+        pole[vyska0][sirka0 + 1] = 1
+        pole[vyska0][sirka0 + 2] = 1
+        pole[vyska0 + 1][sirka0 + 1] = 1
+        pole[vyska0 + 1][sirka0 + 2] = 1
+        print(pole)
+        clock.schedule_unique(kostka_vyber, 0)
+
+
+def can_move(x, y, co=None):
+    if co is None:
+        co = kostka
+    for pocitanix in range(4):
+        for pocitaniy in range(4):
+            if co[pocitanix][pocitaniy] == 0:
+                continue
+            try:
+                if x + pocitanix < 0 or y + pocitaniy < 0:
+                    return False
+                if pole[x + pocitanix][y + pocitaniy] > 0:
+                    return False
+            except IndexError:
+                return False
+    return True
+
+
+
+
 neomezenarychlost = 0
 def on_mouse_down():
     global neomezenarychlost
     if neomezenarychlost == 0:
+        clock.schedule_interval(ukladani, 0.5)
         clock.schedule_interval(padani, 0.5)
         clock.schedule_interval(draw, 0.5)
+        clock.schedule_interval(can_move, 0.25)
         neomezenarychlost = 1
 
 
+def otoc_kostku(smer):
+    kostka_otaceni = []
+    for b in range(4):
+        kostka_otaceni.append([0] * 4)
+    if smer == 1:
+        for otackyx in range(4):
+            for otackyy in range(4):
+                kostka_otaceni[otackyx][otackyy] = kostka[otackyy][otackyx]!!!!!!!!!!!!!!!!!!!!!!
+    if smer == -1:
+        for otackyx in range(3, -1, -1):
+            for otackyy in range(3, -1, -1):
+                kostka_otaceni[otackyx][otackyy] = kostka[otackyy][otackyx]
+    return kostka_otaceni
+
 def on_key_down(key):
     global sirka0
+    global kostka
     if key == keys.A or key == keys.LEFT:
-        sirka0 = sirka0 - 1
+        if can_move(vyska0, sirka0 - 1):
+            if sirka0 >= 0:
+                sirka0 = sirka0 - 1
     if key == keys.D or key == keys.RIGHT:
-        sirka0 = sirka0 + 1
+        if can_move(vyska0, sirka0 + 1):
+            if sirka0 <= 11:
+                sirka0 = sirka0 + 1
     print(sirka0)
+    if key == keys.E:
+        otoc_kostku(1)
+        o = otoc_kostku(0)
+        if can_move(vyska0, sirka0, o):
+            kostka = o
+            print(kostka)
+    if key == keys.Q:
+        otoc_kostku(-1)
+        o = otoc_kostku(0)
+        if can_move(vyska0, sirka0, o):
+            kostka = o
+            print(kostka)
 
 
 
@@ -60,29 +131,18 @@ def draw():
             r = Rect((x * pocet_pixelu, y * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
             if barva == 0:
                 barva_kostky = (255, 255, 255)
+            if barva == 1:
+                barva_kostky = (255, 0, 255)
             screen.draw.filled_rect(r, barva_kostky)
-    if kostka[1][1] == 1:
-        test = Rect(((sirka0 + 1) * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-        screen.draw.filled_rect(test, (255, 255, 255))
-        test = Rect(((sirka0 + 1) * pocet_pixelu, (vyska0 + 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-        screen.draw.filled_rect(test, (255, 0, 255))
-    if kostka[1][2] == 1:
-        test = Rect(((sirka0 + 2) * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-        screen.draw.filled_rect(test, (255, 255, 255))
-        test = Rect(((sirka0 + 2) * pocet_pixelu, (vyska0 + 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-        screen.draw.filled_rect(test, (255, 0, 255))
-    if kostka[0][1] == 1:
-        test = Rect(((sirka0 + 1) * pocet_pixelu, (vyska0 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-        screen.draw.filled_rect(test, (255, 255, 255))
-        test = Rect(((sirka0 + 1) * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-        screen.draw.filled_rect(test, (255, 0, 255))
-    if kostka[0][2] == 1:
-        test = Rect(((sirka0 + 2) * pocet_pixelu, (vyska0 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-        screen.draw.filled_rect(test, (255, 255, 255))
-        test = Rect(((sirka0 + 2) * pocet_pixelu, vyska0 * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-        screen.draw.filled_rect(test, (255, 0, 255))
-    if vyska0 == 19:
-        clock.unschedule(padani)
+    for kostkax in range(4):
+        for kostkay in range(4):
+            if kostka[kostkax][kostkay] == 1:
+                test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+                screen.draw.filled_rect(test, (255, 255, 255))
+                test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 + kostkax) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+                screen.draw.filled_rect(test, (255, 0, 255))
+#    if vyska0 == 19:
+#        clock.unschedule(padani)
 
 
 
@@ -105,4 +165,14 @@ def draw():
 #             kostky = kostky.append(v)
 #             u = kostky.pop(0)
 
+
+#    if pole[vyska0 + 2][sirka0 + 1] == 0:
+#        if pole[vyska0 + 2][sirka0 + 2] == 0:
+#            pohyb_dolu = True
+#    if pole[vyska0][sirka0] == 0:
+#        if pole[vyska0 + 1][sirka0] == 0:
+#            pohyb_vlevo = True
+#    if pole[vyska0][sirka0 + 3] == 0:
+#        if pole[vyska0 + 1][sirka0 + 3] == 0:
+#            pohyb_vpravo = True
 pgzrun.go()
