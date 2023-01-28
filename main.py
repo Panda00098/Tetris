@@ -1,10 +1,10 @@
 # import random
-import pgzrun
-from pgzero import clock, screen
+import pgzrun, pgzero
 from pygame import draw, keys, Rect
+from pgzero import clock, screen
 
 sirka = 15
-vyska = 11  #21
+vyska = 11  # 21
 pocet_pixelu = 25
 
 kostka = []
@@ -18,13 +18,12 @@ kostka[0][2] = 1
 kostka[1][1] = 1
 kostka[1][2] = 1
 
+
 def kostka_vyber():
     global vyska0
     global sirka0
     vyska0 = 0
     sirka0 = 5
-
-
 
 
 pole = []
@@ -33,8 +32,6 @@ for y in range(vyska):
     for x in range(sirka):
         radek.append(0)
     pole.append(radek)
-
-
 
 
 def padani():
@@ -70,9 +67,9 @@ def can_move(x, y, co=None):
     return True
 
 
-
-
 neomezenarychlost = 0
+
+
 def on_mouse_down():
     global neomezenarychlost
     if neomezenarychlost == 0:
@@ -96,6 +93,7 @@ def otoc_kostku(smer):
             for otackyy in range(3, -1, -1):
                 kostka_otaceni[otackyx][otackyy] = kostka[otackyy][otackyx]
     return kostka_otaceni
+
 
 def on_key_down(key):
     global sirka0
@@ -123,8 +121,6 @@ def on_key_down(key):
             print(kostka)
 
 
-
-
 def draw():
     global barva_kostky
     screen.clear()
@@ -139,13 +135,16 @@ def draw():
     for kostkax in range(4):
         for kostkay in range(4):
             if kostka[kostkax][kostkay] == 1:
-                test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 - 1) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+                test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 - 1) * pocet_pixelu),
+                            (pocet_pixelu, pocet_pixelu))
                 screen.draw.filled_rect(test, (255, 255, 255))
-                test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 + kostkax) * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+                test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 + kostkax) * pocet_pixelu),
+                            (pocet_pixelu, pocet_pixelu))
                 screen.draw.filled_rect(test, (255, 0, 255))
+
+
 #    if vyska0 == 19:
 #        clock.unschedule(padani)
-
 
 
 #    kostka_x = 6
