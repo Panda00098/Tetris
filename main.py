@@ -1,27 +1,22 @@
-# import random
+03import random
 import pgzrun
 
 sirka = 15
-vyska = 11  # 21
+vyska = 21  # 21
 pocet_pixelu = 25
+
+WIDTH = sirka * pocet_pixelu
+HEIGHT = vyska * pocet_pixelu
 
 kostka = []
 for a in range(4):
     kostka.append([0] * 4)
+for a in range(4):
+    kostka[1][a] = 1
 
 vyska0 = 0
 sirka0 = 5
-kostka[0][1] = 1
-kostka[0][2] = 1
-kostka[1][1] = 1
-kostka[1][2] = 1
 
-
-def kostka_vyber():
-    global vyska0
-    global sirka0
-    vyska0 = 0
-    sirka0 = 5
 
 
 pole = []
@@ -32,20 +27,79 @@ for y in range(vyska):
     pole.append(radek)
 
 
+
 def padani():
-    global vyska0
-    vyska0 = vyska0 + 1
+    global vyska0, sirka0
+    if not can_move(vyska0 + 1, sirka0):
+        for ukladanix in range(4):
+            for ukladaniy in range(4):
+                if kostka[ukladanix][ukladaniy] != 0:
+                    pole[vyska0 + ukladanix][sirka0 + ukladaniy] = kostka[ukladanix][ukladaniy]
+        print(pole)
+        vyber_kostky()
+#        niceni()
+        vyska0 = 0
+        sirka0 = 5
+    else:
+        vyska0 = vyska0 + 1
+
     print("provedení počtů", vyska0)
 
 
-def ukladani():
-    if not can_move(vyska0 + 1, sirka0):
-        pole[vyska0][sirka0 + 1] = 1
-        pole[vyska0][sirka0 + 2] = 1
-        pole[vyska0 + 1][sirka0 + 1] = 1
-        pole[vyska0 + 1][sirka0 + 2] = 1
-        print(pole)
-        clock.schedule_unique(kostka_vyber, 0)
+def niceni():
+    global pole
+    nicici_pole = pole
+    for niceniy in range(vyska):
+        scitani = 0
+        for nicenix in range(sirka):
+            if nicici_pole[vyska - niceniy][nicenix] == 1:
+                scitani += 1
+            if scitani == sirka:
+                for a in range(sirka):
+                    nicici_pole[niceniy][a] = 0
+                z = nicici_pole.pop(niceniy)
+                z.append(nicici_pole)
+                pole = z
+
+
+def vyber_kostky():
+    global kostka
+    vybrana_kostka = random.randint(0, 6)
+    print(vybrana_kostka, "tady")
+    nova_kostka = []
+    for a in range(4):
+        nova_kostka.append([0] * 4)
+    if vybrana_kostka == 0:
+        for u in range(4):
+            nova_kostka[1][u] = 1
+    if vybrana_kostka == 1:
+        for u in range(2):
+            for h in range(2):
+                nova_kostka[u + 1][h + 1] = 1
+    if vybrana_kostka == 2:
+        for u in range(2):
+            nova_kostka[1][u] = 1
+        for u in range(2):
+            nova_kostka[2][u + 1] = 1
+    if vybrana_kostka == 3:
+        for u in range(2):
+            nova_kostka[2][u] = 1
+        for u in range(2):
+            nova_kostka[1][u + 1] = 1
+    if vybrana_kostka == 4:
+        for u in range(3):
+            nova_kostka[1][u] = 1
+        nova_kostka[2][0] = 1
+    if vybrana_kostka == 5:
+        for u in range(3):
+            nova_kostka[2][u] = 1
+        nova_kostka[1][0] = 1
+    if vybrana_kostka == 6:
+        for u in range(3):
+            nova_kostka[2][u] = 1
+        nova_kostka[1][1] = 1
+    kostka = nova_kostka
+
 
 
 def can_move(x, y, co=None):
@@ -71,10 +125,7 @@ neomezenarychlost = 0
 def on_mouse_down():
     global neomezenarychlost
     if neomezenarychlost == 0:
-        clock.schedule_interval(ukladani, 0.5)
         clock.schedule_interval(padani, 0.5)
-        clock.schedule_interval(draw, 0.5)
-        clock.schedule_interval(can_move, 0.25)
         neomezenarychlost = 1
 
 
@@ -85,11 +136,11 @@ def otoc_kostku(smer):
     if smer == 1:
         for otackyx in range(4):
             for otackyy in range(4):
-                kostka_otaceni[otackyx][otackyy] = kostka[otackyy][otackyx]
+                kostka_otaceni[otackyx][otackyy] = kostka[3 - otackyy][otackyx]
     if smer == -1:
         for otackyx in range(3, -1, -1):
             for otackyy in range(3, -1, -1):
-                kostka_otaceni[otackyx][otackyy] = kostka[otackyy][otackyx]
+                kostka_otaceni[otackyx][otackyy] = kostka[otackyy][3 - otackyx]
     return kostka_otaceni
 
 
@@ -98,29 +149,24 @@ def on_key_down(key):
     global kostka
     if key == keys.A or key == keys.LEFT:
         if can_move(vyska0, sirka0 - 1):
-            if sirka0 >= 0:
-                sirka0 = sirka0 - 1
+            sirka0 = sirka0 - 1
     if key == keys.D or key == keys.RIGHT:
         if can_move(vyska0, sirka0 + 1):
-            if sirka0 <= 11:
-                sirka0 = sirka0 + 1
+            sirka0 = sirka0 + 1
     print(sirka0)
     if key == keys.E:
-        otoc_kostku(1)
-        o = otoc_kostku(0)
+        o = otoc_kostku(1)
         if can_move(vyska0, sirka0, o):
             kostka = o
             print(kostka)
     if key == keys.Q:
-        otoc_kostku(-1)
-        o = otoc_kostku(0)
+        o = otoc_kostku(-1)
         if can_move(vyska0, sirka0, o):
             kostka = o
             print(kostka)
 
 
 def draw():
-    global barva_kostky
     screen.clear()
     for y, radek in enumerate(pole):
         for x, barva in enumerate(radek):
