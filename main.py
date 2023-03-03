@@ -62,6 +62,7 @@ def niceni():
                         radek_niceni.append(pole[a][b])
                     nicici_pole[a + 1] = radek_niceni
                 pole = nicici_pole
+                niceni()
 
 
 
