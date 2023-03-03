@@ -1,4 +1,4 @@
-03import random
+import random
 import pgzrun
 
 sirka = 15
