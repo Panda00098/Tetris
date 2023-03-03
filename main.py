@@ -1,5 +1,6 @@
 import random
 import pgzrun
+import copy
 
 sirka = 15
 vyska = 10  # 21
@@ -26,9 +27,7 @@ for y in range(vyska):
         radek.append(0)
     pole.append(radek)
 
-# ladící situace
-for x in range(sirka-4):
-    pole[vyska-1][x] = 1
+
 
 def padani():
     global vyska0, sirka0
@@ -38,7 +37,7 @@ def padani():
                 if kostka[ukladanix][ukladaniy] != 0:
                     pole[vyska0 + ukladanix][sirka0 + ukladaniy] = kostka[ukladanix][ukladaniy]
         print(pole)
-        #vyber_kostky()
+        vyber_kostky()
         niceni()
         vyska0 = 0
         sirka0 = 5
@@ -50,15 +49,21 @@ def padani():
 
 def niceni():
     global pole
-    nicici_pole = pole
+    nicici_pole = copy.deepcopy(pole)
     for niceniy in range(vyska):
         scitani = 0
         for nicenix in range(sirka):
             if nicici_pole[vyska - niceniy - 1][nicenix] == 1:
                 scitani += 1
             if scitani == sirka:
-                for a in range(sirka):
-                    nicici_pole[niceniy][a] = 0
+                for a in range(vyska - 1):
+                    radek_niceni = []
+                    for b in range(sirka):
+                        radek_niceni.append(pole[a][b])
+                    nicici_pole[a + 1] = radek_niceni
+                pole = nicici_pole
+
+
 
 
 def vyber_kostky():
