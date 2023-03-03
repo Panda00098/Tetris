@@ -2,7 +2,7 @@ import random
 import pgzrun
 
 sirka = 15
-vyska = 21  # 21
+vyska = 10  # 21
 pocet_pixelu = 25
 
 WIDTH = sirka * pocet_pixelu
@@ -26,7 +26,9 @@ for y in range(vyska):
         radek.append(0)
     pole.append(radek)
 
-
+# ladící situace
+for x in range(sirka-4):
+    pole[vyska-1][x] = 1
 
 def padani():
     global vyska0, sirka0
@@ -36,8 +38,8 @@ def padani():
                 if kostka[ukladanix][ukladaniy] != 0:
                     pole[vyska0 + ukladanix][sirka0 + ukladaniy] = kostka[ukladanix][ukladaniy]
         print(pole)
-        vyber_kostky()
-#        niceni()
+        #vyber_kostky()
+        niceni()
         vyska0 = 0
         sirka0 = 5
     else:
@@ -52,14 +54,11 @@ def niceni():
     for niceniy in range(vyska):
         scitani = 0
         for nicenix in range(sirka):
-            if nicici_pole[vyska - niceniy][nicenix] == 1:
+            if nicici_pole[vyska - niceniy - 1][nicenix] == 1:
                 scitani += 1
             if scitani == sirka:
                 for a in range(sirka):
                     nicici_pole[niceniy][a] = 0
-                z = nicici_pole.pop(niceniy)
-                z.append(nicici_pole)
-                pole = z
 
 
 def vyber_kostky():
