@@ -42,9 +42,9 @@ def padani():
         sirka0 = 5
         if pady == 20:
             pady = 0
-            if rychlostpadu != 0.1:
-                rychlostpadu -= 0.1
-                round(rychlostpadu, 2)
+            if rychlostpadu > 1:
+                rychlostpadu -= 1
+                round(rychlostpadu, 1)
                 print(rychlostpadu)
         else:
             pady += 1
@@ -132,13 +132,13 @@ def can_move(x, y, co=None):
 
 
 neomezenarychlost = 0
-rychlostpadu = 0.5
+rychlostpadu = 5
 
 def on_mouse_down():
     global neomezenarychlost
     global rychlostpadu
     if neomezenarychlost == 0:
-        clock.schedule_interval(padani, rychlostpadu)
+        clock.schedule_interval(padani, rychlostpadu / 10)
         neomezenarychlost = 1
 
 
