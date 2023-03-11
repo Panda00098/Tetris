@@ -198,13 +198,30 @@ def nakresli_kostku(x, y, rgb):
                 screen.draw.filled_rect(test, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
 
 def draw():
-    global vyska0
+    global vyska0, barva
     screen.clear()
     for y, radek in enumerate(pole):
         for x, barva in enumerate(radek):
             r = Rect((x * pocet_pixelu, y * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
             rgb = barvy[barva]
             screen.draw.filled_rect(r, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
+    nakresli_kostku(sirka0, vyska0, barvy[barva])
+    zkvyska = vyska0
+    while can_move(zkvyska, sirka0):
+        zkvyska += 1
+    zkvyska -= 1
+    nakresli_kostku(sirka0, zkvyska, barvy[barva])
+    dopad = Rect((sirka0 * pocet_pixelu, zkvyska * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+    nakresli_kostku(sirka0, zkvyska, 0x808080)
+
+
+
+
+
+
+
+    #screen.draw.filled_rect(dopad, (0x80, 0x80, 0x80))
+
     #for kostkax in range(4):
     #    for kostkay in range(4):
     #        test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 + kostkax) * pocet_pixelu),
@@ -212,15 +229,6 @@ def draw():
     #        if kostka[kostkax][kostkay] > 0:
     #            rgb = barvy[kostka[kostkax][kostkay]]
     #            screen.draw.filled_rect(test, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
-    nakresli_kostku(sirka0, vyska0, ???)
-    zkvyska = vyska0
-    while can_move(zkvyska, sirka0):
-        zkvyska += 1
-    zkvyska -= 1
-    dopad = Rect((sirka0 * pocet_pixelu, zkvyska * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-    nakresli_kostku(sirka0, zkvyska, 0x808080)
-    #screen.draw.filled_rect(dopad, (0x80, 0x80, 0x80))
-
 
 
 pgzrun.go()
