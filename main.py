@@ -64,9 +64,9 @@ def niceni():
                 scitani += 1
         if scitani == sirka:
             print("Mazu radek", niceniy)
-            for a in range(vyska-1-niceniy, 1, -1):
+            for a in range(vyska-1-niceniy, 0, -1):
                 nicici_pole[a] = nicici_pole[a-1]
-            nicici_pole[0] = copy.deepcopy(prazny_radek)
+            nicici_pole[0] = [0] * sirka
             pole = nicici_pole
             niceni()
             break
@@ -77,6 +77,7 @@ def niceni():
 def vyber_kostky():
     global kostka
     vybrana_kostka = random.randint(0, 6)
+#    vybrana_kostka = 0
     nova_kostka = []
     for a in range(4):
         nova_kostka.append([0] * 4)
