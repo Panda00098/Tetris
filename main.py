@@ -3,7 +3,7 @@ import pgzrun
 import copy
 
 sirka = 15
-vyska = 10  # 21
+vyska = 21  # 21
 pocet_pixelu = 25
 
 WIDTH = sirka * pocet_pixelu
@@ -27,10 +27,10 @@ for y in range(vyska):
         radek.append(0)
     pole.append(radek)
 
-
+pady = 0
 
 def padani():
-    global vyska0, sirka0
+    global vyska0, sirka0, rychlostpadu, pady
     if not can_move(vyska0 + 1, sirka0):
         for ukladanix in range(4):
             for ukladaniy in range(4):
@@ -41,6 +41,12 @@ def padani():
         niceni()
         vyska0 = 0
         sirka0 = 5
+        if pady == 20:
+            pady = 0
+            if rychlostpadu != 0.1:
+                rychlostpadu -= 0.1
+        else:
+            pady += 1
     else:
         vyska0 = vyska0 + 1
 
@@ -53,7 +59,7 @@ def niceni():
     for niceniy in range(vyska):
         scitani = 0
         for nicenix in range(sirka):
-            if nicici_pole[vyska - niceniy - 1][nicenix] == 1:
+            if nicici_pole[vyska - niceniy - 1][nicenix] != 0:
                 scitani += 1
             if scitani == sirka:
                 for a in range(vyska - 1):
@@ -80,29 +86,29 @@ def vyber_kostky():
     if vybrana_kostka == 1:
         for u in range(2):
             for h in range(2):
-                nova_kostka[u + 1][h + 1] = 1
+                nova_kostka[u + 1][h + 1] = 2
     if vybrana_kostka == 2:
         for u in range(2):
-            nova_kostka[1][u] = 1
+            nova_kostka[1][u] = 3
         for u in range(2):
-            nova_kostka[2][u + 1] = 1
+            nova_kostka[2][u + 1] = 3
     if vybrana_kostka == 3:
         for u in range(2):
-            nova_kostka[2][u] = 1
+            nova_kostka[2][u] = 4
         for u in range(2):
-            nova_kostka[1][u + 1] = 1
+            nova_kostka[1][u + 1] = 4
     if vybrana_kostka == 4:
         for u in range(3):
-            nova_kostka[1][u] = 1
-        nova_kostka[2][0] = 1
+            nova_kostka[1][u] = 5
+        nova_kostka[2][0] = 5
     if vybrana_kostka == 5:
         for u in range(3):
-            nova_kostka[2][u] = 1
-        nova_kostka[1][0] = 1
+            nova_kostka[2][u] = 6
+        nova_kostka[1][0] = 6
     if vybrana_kostka == 6:
         for u in range(3):
-            nova_kostka[2][u] = 1
-        nova_kostka[1][1] = 1
+            nova_kostka[2][u] = 7
+        nova_kostka[1][1] = 7
     kostka = nova_kostka
 
 
@@ -125,12 +131,13 @@ def can_move(x, y, co=None):
 
 
 neomezenarychlost = 0
-
+rychlostpadu = 0.5
 
 def on_mouse_down():
     global neomezenarychlost
+    global rychlostpadu
     if neomezenarychlost == 0:
-        clock.schedule_interval(padani, 0.5)
+        clock.schedule_interval(padani, rychlostpadu)
         neomezenarychlost = 1
 
 
@@ -150,8 +157,7 @@ def otoc_kostku(smer):
 
 
 def on_key_down(key):
-    global sirka0
-    global kostka
+    global sirka0, kostka, vyska0
     if key == keys.A or key == keys.LEFT:
         if can_move(vyska0, sirka0 - 1):
             sirka0 = sirka0 - 1
@@ -169,60 +175,52 @@ def on_key_down(key):
         if can_move(vyska0, sirka0, o):
             kostka = o
             print(kostka)
+    if key == keys.S:
+        x = 0
+        a = 0
+        while a != 1:
+            if can_move(vyska0 + x, sirka0):
+                x += 1
+                print("zkousim")
+            else:
+                x -= 1
+                a = 1
+                vyska0 = vyska0 + x
 
+barvy = (0xffffff, 0x00ffff, 0xffff00, 0xff0000, 0x00ff00, 0x0000ff, 0xffa500, 0xa020f0)
+
+def nakresli_kostku(x, y, rgb):
+    for kostkax in range(4):
+        for kostkay in range(4):
+            test = Rect(((x + kostkay) * pocet_pixelu, (y + kostkax) * pocet_pixelu),
+                        (pocet_pixelu, pocet_pixelu))
+            if kostka[kostkax][kostkay] > 0:
+                screen.draw.filled_rect(test, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
 
 def draw():
+    global vyska0
     screen.clear()
     for y, radek in enumerate(pole):
         for x, barva in enumerate(radek):
             r = Rect((x * pocet_pixelu, y * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-            if barva == 0:
-                barva_kostky = (255, 255, 255)
-            if barva == 1:
-                barva_kostky = (255, 0, 255)
-            screen.draw.filled_rect(r, barva_kostky)
-    for kostkax in range(4):
-        for kostkay in range(4):
-            if kostka[kostkax][kostkay] == 1:
-                test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 - 1) * pocet_pixelu),
-                            (pocet_pixelu, pocet_pixelu))
-                screen.draw.filled_rect(test, (255, 255, 255))
-                test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 + kostkax) * pocet_pixelu),
-                            (pocet_pixelu, pocet_pixelu))
-                screen.draw.filled_rect(test, (255, 0, 255))
+            rgb = barvy[barva]
+            screen.draw.filled_rect(r, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
+    #for kostkax in range(4):
+    #    for kostkay in range(4):
+    #        test = Rect(((sirka0 + kostkay) * pocet_pixelu, (vyska0 + kostkax) * pocet_pixelu),
+    #                    (pocet_pixelu, pocet_pixelu))
+    #        if kostka[kostkax][kostkay] > 0:
+    #            rgb = barvy[kostka[kostkax][kostkay]]
+    #            screen.draw.filled_rect(test, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
+    nakresli_kostku(sirka0, vyska0, ???)
+    zkvyska = vyska0
+    while can_move(zkvyska, sirka0):
+        zkvyska += 1
+    zkvyska -= 1
+    dopad = Rect((sirka0 * pocet_pixelu, zkvyska * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+    nakresli_kostku(sirka0, zkvyska, 0x808080)
+    #screen.draw.filled_rect(dopad, (0x80, 0x80, 0x80))
 
 
-#    if vyska0 == 19:
-#        clock.unschedule(padani)
 
-
-#    kostka_x = 6
-#    kostka_y = 0
-#    mal_kostka = Rect((kostka_x * pocet_pixelu, kostka_y * pocet_pixelu), (pocet_pixelu * 2, pocet_pixelu * 2))
-#    screen.draw.filled_rect(mal_kostka, (255, 0, 255))
-
-
-#    def vyber_kostky():
-#        while u == 1:
-#            v = 0
-#            u = 9
-#            while kostky[0] != " ":
-#                kostky = []
-#                 while kostky[3] != " ":
-#                     v = v.random.randrange(7)
-#                     kostky = kostky.append(v)
-#             v = v.random.randrange(7)
-#             kostky = kostky.append(v)
-#             u = kostky.pop(0)
-
-
-#    if pole[vyska0 + 2][sirka0 + 1] == 0:
-#        if pole[vyska0 + 2][sirka0 + 2] == 0:
-#            pohyb_dolu = True
-#    if pole[vyska0][sirka0] == 0:
-#        if pole[vyska0 + 1][sirka0] == 0:
-#            pohyb_vlevo = True
-#    if pole[vyska0][sirka0 + 3] == 0:
-#        if pole[vyska0 + 1][sirka0 + 3] == 0:
-#            pohyb_vpravo = True
 pgzrun.go()
