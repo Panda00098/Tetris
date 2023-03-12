@@ -6,8 +6,8 @@ sirka = 15
 vyska = 21  # 21
 pocet_pixelu = 25
 
-WIDTH = sirka * pocet_pixelu
-HEIGHT = vyska * pocet_pixelu
+WIDTH = (sirka + 6) * pocet_pixelu
+HEIGHT = (vyska + 6) * pocet_pixelu
 
 kostka = []
 for a in range(4):
@@ -28,9 +28,10 @@ for y in range(vyska):
     pole.append(radek)
 
 pady = 0
+scitani_kostek = 0
 
 def padani():
-    global vyska0, sirka0, rychlostpadu, pady
+    global vyska0, sirka0, rychlostpadu, pady, scitani_kostek
     if not can_move(vyska0 + 1, sirka0):
         for ukladanix in range(4):
             for ukladaniy in range(4):
@@ -40,22 +41,27 @@ def padani():
         niceni()
         vyska0 = 0
         sirka0 = 5
-        if pady == 20:
+        scitani_kostek += 1
+        if pady == 100:
             pady = 0
-            if rychlostpadu > 1:
-                rychlostpadu -= 1
-                round(rychlostpadu, 1)
-                print(rychlostpadu)
+            rychlostpadu = 0.5
+            print(rychlostpadu)
         else:
-            pady += 1
+            if pady == 20:
+                if rychlostpadu > 1:
+                    rychlostpadu -= 1
+                    pady = 0
+                    print(rychlostpadu)
+            else:
+                pady += 1
     else:
         vyska0 = vyska0 + 1
 
 
-
+scitani_rad = 0
 
 def niceni():
-    global pole
+    global pole, scitani_rad
     nicici_pole = copy.deepcopy(pole)
     for niceniy in range(vyska):
         scitani = 0
@@ -64,6 +70,7 @@ def niceni():
                 scitani += 1
         if scitani == sirka:
             print("Mazu radek", niceniy)
+            scitani_rad += 1
             for a in range(vyska-1-niceniy, 0, -1):
                 nicici_pole[a] = nicici_pole[a-1]
             nicici_pole[0] = [0] * sirka
@@ -72,11 +79,17 @@ def niceni():
             break
 
 
-
+zasobarna = 0
+zasoba_kostek = []
 
 def vyber_kostky():
-    global kostka
-    vybrana_kostka = random.randint(0, 6)
+    global kostka, zasobarna, vybrana_kostka
+    if zasobarna == 0:
+        zasobarna = 1
+        for x in range(5):
+            zasoba_kostek.append(random.randint(0, 6))
+    vybrana_kostka = zasoba_kostek.pop(4)
+    zasoba_kostek.append(random.randint(0, 6))
 #    vybrana_kostka = 0
     nova_kostka = []
     for a in range(4):
@@ -114,6 +127,7 @@ def vyber_kostky():
 
 
 
+
 def can_move(x, y, co=None):
     if co is None:
         co = kostka
@@ -132,11 +146,10 @@ def can_move(x, y, co=None):
 
 
 neomezenarychlost = 0
-rychlostpadu = 5
+rychlostpadu = 10
 
 def on_mouse_down():
-    global neomezenarychlost
-    global rychlostpadu
+    global neomezenarychlost, rychlostpadu
     if neomezenarychlost == 0:
         clock.schedule_interval(padani, rychlostpadu / 10)
         neomezenarychlost = 1
@@ -194,8 +207,9 @@ def nakresli_kostku(x, y, rgb):
             if kostka[kostkax][kostkay] > 0:
                 screen.draw.filled_rect(test, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
 
+
 def draw():
-    global vyska0, rgb_kostky
+    global vyska0, rgb_kostky, barva_dalsi_kostky
     screen.clear()
     for y, radek in enumerate(pole):
         for x, barva in enumerate(radek):
@@ -218,6 +232,9 @@ def draw():
         if pocitani_barvy == 1:
             break
     nakresli_kostku(sirka0, vyska0, barvy[rgb_kostky])
+    screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="gray")
+    screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 3) * pocet_pixelu), color="gray")
+    screen.draw.text(("speed: " + str(rychlostpadu / 10)), (1 * pocet_pixelu, (vyska + 5) * pocet_pixelu), color="gray")
 
 
 
