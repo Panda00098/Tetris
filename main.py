@@ -31,29 +31,30 @@ pady = 0
 scitani_kostek = 0
 
 def padani():
-    global vyska0, sirka0, rychlostpadu, pady, scitani_kostek
+    global vyska0, sirka0, rychlostpadu, pady, scitani_kostek, neomezenarychlost
     if not can_move(vyska0 + 1, sirka0):
         for ukladanix in range(4):
             for ukladaniy in range(4):
                 if kostka[ukladanix][ukladaniy] != 0:
                     pole[vyska0 + ukladanix][sirka0 + ukladaniy] = kostka[ukladanix][ukladaniy]
-        vyber_kostky()
+        vyber_kostky(0, 0)
         niceni()
         vyska0 = 0
         sirka0 = 5
         scitani_kostek += 1
         if pady == 100:
             pady = 0
-            rychlostpadu = 0.5
-            print(rychlostpadu)
+            rychlostpadu = 25
+            rychlost_padu()
         else:
             if pady == 20:
-                if rychlostpadu > 1:
-                    rychlostpadu -= 1
+                if rychlostpadu > 40:
+                    rychlostpadu -= 5
                     pady = 0
-                    print(rychlostpadu)
+                    rychlost_padu()
             else:
                 pady += 1
+        print(pady)
     else:
         vyska0 = vyska0 + 1
 
@@ -69,7 +70,6 @@ def niceni():
             if nicici_pole[vyska - niceniy - 1][nicenix] != 0:
                 scitani += 1
         if scitani == sirka:
-            print("Mazu radek", niceniy)
             scitani_rad += 1
             for a in range(vyska-1-niceniy, 0, -1):
                 nicici_pole[a] = nicici_pole[a-1]
@@ -79,17 +79,20 @@ def niceni():
             break
 
 
-zasobarna = 0
 zasoba_kostek = []
-
-def vyber_kostky():
-    global kostka, zasobarna, vybrana_kostka
-    if zasobarna == 0:
-        zasobarna = 1
-        for x in range(5):
-            zasoba_kostek.append(random.randint(0, 6))
-    vybrana_kostka = zasoba_kostek.pop(4)
+for x in range(5):
     zasoba_kostek.append(random.randint(0, 6))
+kostka_stranou = []
+for a in range(4):
+    kostka_stranou.append([0] * 4)
+
+def vyber_kostky(kde, kolikata):
+    global kostka, zasobarna, vybrana_kostka, kostka_stranou
+    if kde == 0:
+        vybrana_kostka = zasoba_kostek.pop(0)
+        zasoba_kostek.append(random.randint(0, 6))
+    if kde == 1:
+        vybrana_kostka = zasoba_kostek[kolikata]
 #    vybrana_kostka = 0
     nova_kostka = []
     for a in range(4):
@@ -123,7 +126,10 @@ def vyber_kostky():
         for u in range(3):
             nova_kostka[2][u] = 7
         nova_kostka[1][1] = 7
-    kostka = nova_kostka
+    if kde == 0:
+        kostka = nova_kostka
+    if kde == 1:
+        kostka_stranou = nova_kostka
 
 
 
@@ -145,14 +151,12 @@ def can_move(x, y, co=None):
     return True
 
 
-neomezenarychlost = 0
-rychlostpadu = 10
 
-def on_mouse_down():
-    global neomezenarychlost, rychlostpadu
-    if neomezenarychlost == 0:
-        clock.schedule_interval(padani, rychlostpadu / 10)
-        neomezenarychlost = 1
+rychlostpadu = 100
+
+def rychlost_padu():
+    clock.unschedule(padani)
+    clock.schedule_interval(padani, rychlostpadu / 100)
 
 
 def otoc_kostku(smer):
@@ -196,8 +200,40 @@ def on_key_down(key):
                 pad -= 1
                 koncime = 1
                 vyska0 = vyska0 + pad
+    if key == keys.SPACE:
+        clock.schedule_interval(padani, rychlostpadu / 100)
+
+
 
 barvy = (0xffffff, 0x00ffff, 0xffff00, 0xff0000, 0x00ff00, 0x0000ff, 0xffa500, 0xa020f0)
+
+
+def jaka_barva():
+    global rgb_kostky
+    pocitani_barvy = 0
+    for kostkax in range(4):
+        for kostkay in range(4):
+            if kostka[kostkax][kostkay] > 0:
+                rgb_kostky = kostka[kostkax][kostkay]
+                pocitani_barvy = 1
+            if pocitani_barvy == 1:
+                break
+        if pocitani_barvy == 1:
+            break
+
+
+def jaka_barva_strana():
+    global rgb_kostky_strany
+    pocitani_barvy = 0
+    for kostkax in range(4):
+        for kostkay in range(4):
+            if kostka_stranou[kostkax][kostkay] > 0:
+                rgb_kostky_strany = kostka_stranou[kostkax][kostkay]
+                pocitani_barvy = 1
+            if pocitani_barvy == 1:
+                break
+        if pocitani_barvy == 1:
+            break
 
 def nakresli_kostku(x, y, rgb):
     for kostkax in range(4):
@@ -208,8 +244,20 @@ def nakresli_kostku(x, y, rgb):
                 screen.draw.filled_rect(test, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
 
 
+def nakresli_kostku_strana(x, y, rgb):
+    for kostkax in range(4):
+        for kostkay in range(4):
+            test = Rect(((x + kostkay) * pocet_pixelu, (y + kostkax) * pocet_pixelu),
+                        (pocet_pixelu, pocet_pixelu))
+            if kostka_stranou[kostkax][kostkay] > 0:
+                screen.draw.filled_rect(test, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
+
+
+
+
+
 def draw():
-    global vyska0, rgb_kostky, barva_dalsi_kostky
+    global vyska0
     screen.clear()
     for y, radek in enumerate(pole):
         for x, barva in enumerate(radek):
@@ -221,17 +269,12 @@ def draw():
         zkvyska += 1
     zkvyska -= 1
     nakresli_kostku(sirka0, zkvyska, 0xD3D3D3)
-    pocitani_barvy = 0
-    for kostkax in range(4):
-        for kostkay in range(4):
-            if kostka[kostkax][kostkay] > 0:
-                rgb_kostky = kostka[kostkax][kostkay]
-                pocitani_barvy = 1
-            if pocitani_barvy == 1:
-                break
-        if pocitani_barvy == 1:
-            break
+    jaka_barva()
     nakresli_kostku(sirka0, vyska0, barvy[rgb_kostky])
+    for c in range(5):
+        vyber_kostky(1, c)
+        jaka_barva_strana()
+        nakresli_kostku_strana(17, 1 + c * 4, barvy[rgb_kostky_strany])
     screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="gray")
     screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 3) * pocet_pixelu), color="gray")
     screen.draw.text(("speed: " + str(rychlostpadu / 10)), (1 * pocet_pixelu, (vyska + 5) * pocet_pixelu), color="gray")
