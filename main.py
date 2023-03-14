@@ -1,13 +1,14 @@
 import random
 import pgzrun
 import copy
+import keyboard
 
 sirka = 15
 vyska = 21  # 21
 pocet_pixelu = 25
 
-WIDTH = (sirka + 6) * pocet_pixelu
-HEIGHT = (vyska + 6) * pocet_pixelu
+WIDTH = (sirka + 7) * pocet_pixelu
+HEIGHT = (vyska + 7) * pocet_pixelu
 
 kostka = []
 for a in range(4):
@@ -47,7 +48,7 @@ def padani():
             rychlostpadu = 25
             rychlost_padu()
         else:
-            if pady == 20:
+            if pady == 19:
                 if rychlostpadu > 40:
                     rychlostpadu -= 5
                     pady = 0
@@ -173,15 +174,15 @@ def otoc_kostku(smer):
                 kostka_otaceni[otackyx][otackyy] = kostka[otackyy][3 - otackyx]
     return kostka_otaceni
 
-
+hlidani = 0
+zrychli_pohyb = False
+pamatovak = 0
 def on_key_down(key):
-    global sirka0, kostka, vyska0
+    global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak
     if key == keys.A or key == keys.LEFT:
-        if can_move(vyska0, sirka0 - 1):
-            sirka0 = sirka0 - 1
+        clock.schedule_interval(pohyb_do_stran, 0.1)
     if key == keys.D or key == keys.RIGHT:
-        if can_move(vyska0, sirka0 + 1):
-            sirka0 = sirka0 + 1
+        clock.schedule_interval(pohyb_do_stran, 0.1)
     if key == keys.E:
         otocka = otoc_kostku(1)
         if can_move(vyska0, sirka0, otocka):
@@ -190,7 +191,7 @@ def on_key_down(key):
         otocka = otoc_kostku(-1)
         if can_move(vyska0, sirka0, otocka):
             kostka = otocka
-    if key == keys.S:
+    if key == keys.W:
         pad = 0
         koncime = 0
         while koncime != 1:
@@ -201,7 +202,37 @@ def on_key_down(key):
                 koncime = 1
                 vyska0 = vyska0 + pad
     if key == keys.SPACE:
-        clock.schedule_interval(padani, rychlostpadu / 100)
+        if hlidani == 0:
+            clock.schedule_interval(padani, rychlostpadu / 100)
+            hlidani = 1
+    if key == keys.S:
+        pamatovak = rychlostpadu
+        rychlostpadu = 5
+        rychlost_padu()
+
+
+
+def on_key_up(key):
+    global rychlostpadu
+    if key == keys.S:
+        rychlostpadu = pamatovak
+        rychlost_padu()
+    if key == keys.A or key == keys.LEFT:
+        clock.unschedule(pohyb_do_stran)
+    if key == keys.D or key == keys.RIGHT:
+        clock.unschedule(pohyb_do_stran)
+
+def pohyb_do_stran():
+    global sirka0
+    if keyboard.is_pressed("a") or keyboard.is_pressed("left"):
+        if can_move(vyska0, sirka0 - 1):
+            sirka0 = sirka0 - 1
+    if keyboard.is_pressed("d") or keyboard.is_pressed("right"):
+        if can_move(vyska0, sirka0 + 1):
+            sirka0 = sirka0 + 1
+
+
+
 
 
 
