@@ -19,7 +19,7 @@ for a in range(4):
 vyska0 = 0
 sirka0 = 5
 
-prazny_radek = [0] * sirka
+#prazny_radek = [0] * sirka
 
 pole = []
 for y in range(vyska):
@@ -38,7 +38,7 @@ def padani():
             for ukladaniy in range(4):
                 if kostka[ukladanix][ukladaniy] != 0:
                     pole[vyska0 + ukladanix][sirka0 + ukladaniy] = kostka[ukladanix][ukladaniy]
-        vyber_kostky(0, 0)
+        konec()
         niceni()
         vyska0 = 0
         sirka0 = 5
@@ -58,6 +58,33 @@ def padani():
         print(pady)
     else:
         vyska0 = vyska0 + 1
+
+
+koncici_obrazovka = False
+
+def konec():
+    global koncici_obrazovka, pole, hlidani, zrychli_pohyb, pamatovak, zasoba_kostek, kostka_stranou, rychlostpadu
+    vyber_kostky(0, 0)
+    if not can_move(1, 5):
+        koncici_obrazovka = True
+        draw()
+        pole = []
+        for y in range(vyska):
+            radek = []
+            for x in range(sirka):
+                radek.append(0)
+            pole.append(radek)
+        zasoba_kostek = []
+        rychlostpadu = 100
+        for x in range(5):
+            zasoba_kostek.append(random.randint(0, 6))
+        kostka_stranou = []
+        for a in range(4):
+            kostka_stranou.append([0] * 4)
+        hlidani = 0
+        zrychli_pohyb = False
+        pamatovak = 0
+        keyboard.wait("esc")
 
 
 scitani_rad = 0
@@ -253,6 +280,7 @@ def jaka_barva():
             break
 
 
+
 def jaka_barva_strana():
     global rgb_kostky_strany
     pocitani_barvy = 0
@@ -266,6 +294,8 @@ def jaka_barva_strana():
         if pocitani_barvy == 1:
             break
 
+
+
 def nakresli_kostku(x, y, rgb):
     for kostkax in range(4):
         for kostkay in range(4):
@@ -273,6 +303,7 @@ def nakresli_kostku(x, y, rgb):
                         (pocet_pixelu, pocet_pixelu))
             if kostka[kostkax][kostkay] > 0:
                 screen.draw.filled_rect(test, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
+
 
 
 def nakresli_kostku_strana(x, y, rgb):
@@ -286,29 +317,36 @@ def nakresli_kostku_strana(x, y, rgb):
 
 
 
-
 def draw():
-    global vyska0
-    screen.clear()
-    for y, radek in enumerate(pole):
-        for x, barva in enumerate(radek):
-            r = Rect((x * pocet_pixelu, y * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-            rgb = barvy[barva]
-            screen.draw.filled_rect(r, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
-    zkvyska = vyska0
-    while can_move(zkvyska, sirka0):
-        zkvyska += 1
-    zkvyska -= 1
-    nakresli_kostku(sirka0, zkvyska, 0xD3D3D3)
-    jaka_barva()
-    nakresli_kostku(sirka0, vyska0, barvy[rgb_kostky])
-    for c in range(5):
-        vyber_kostky(1, c)
-        jaka_barva_strana()
-        nakresli_kostku_strana(17, 1 + c * 4, barvy[rgb_kostky_strany])
-    screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="gray")
-    screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 3) * pocet_pixelu), color="gray")
-    screen.draw.text(("speed: " + str(rychlostpadu / 10)), (1 * pocet_pixelu, (vyska + 5) * pocet_pixelu), color="gray")
+    if not koncici_obrazovka:
+        global vyska0
+        screen.clear()
+        for y, radek in enumerate(pole):
+            for x, barva in enumerate(radek):
+                r = Rect((x * pocet_pixelu, y * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+                rgb = barvy[barva]
+                screen.draw.filled_rect(r, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
+        zkvyska = vyska0
+        while can_move(zkvyska, sirka0):
+            zkvyska += 1
+        zkvyska -= 1
+        nakresli_kostku(sirka0, zkvyska, 0xD3D3D3)
+        jaka_barva()
+        nakresli_kostku(sirka0, vyska0, barvy[rgb_kostky])
+        for c in range(5):
+            vyber_kostky(1, c)
+            jaka_barva_strana()
+            nakresli_kostku_strana(17, 1 + c * 4, barvy[rgb_kostky_strany])
+        screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="gray")
+        screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 3) * pocet_pixelu), color="gray")
+        screen.draw.text(("speed: " + str(rychlostpadu / 10)), (1 * pocet_pixelu, (vyska + 5) * pocet_pixelu), color="gray")
+    if koncici_obrazovka:
+        screen.clear()
+        screen.draw.text("GAME OVER", (2.5 * pocet_pixelu, 2 * pocet_pixelu), color="red", fontsize=100)
+        screen.draw.text("score:", (2.5 * pocet_pixelu, (vyska - 1) * pocet_pixelu), color="green", fontsize=40)
+        screen.draw.text(("destroyed layers: " + str(scitani_rad)), (2.5 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green", fontsize=25)
+        screen.draw.text(("block placed: " + str(scitani_kostek)), (2.5 * pocet_pixelu, (vyska + 3) * pocet_pixelu), color="green", fontsize=25)
+        screen.draw.text(("speed: " + str(rychlostpadu / 10)), (2.5 * pocet_pixelu, (vyska + 5) * pocet_pixelu), color="green", fontsize=25)
 
 
 
