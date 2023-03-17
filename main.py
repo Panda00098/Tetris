@@ -1,8 +1,10 @@
+import math
 import random
 import sys
 import pgzrun
 import copy
 import keyboard
+import time
 
 sirka = 15
 vyska = 21  # 21
@@ -33,7 +35,7 @@ scitani_kostek = 0
 vypisovaci_rychlost = 100
 
 def padani():
-    global vyska0, sirka0, rychlostpadu, pady, scitani_kostek, neomezenarychlost, vypisovaci_rychlost, hlidani
+    global vyska0, sirka0, rychlostpadu, pady, scitani_kostek, neomezenarychlost, vypisovaci_rychlost
     if not can_move(vyska0 + 1, sirka0):
         for ukladanix in range(4):
             for ukladaniy in range(4):
@@ -44,7 +46,6 @@ def padani():
         vyska0 = 0
         sirka0 = 5
         scitani_kostek += 1
-        hlidani = 1
         if pady == 100:
             pady = 0
             rychlostpadu = 25
@@ -58,7 +59,6 @@ def padani():
                     pady = 0
                     rychlost_padu()
         pady += 1
-        print(pady)
     else:
         vyska0 = vyska0 + 1
 
@@ -215,68 +215,74 @@ vypnout = True
 
 
 
+
+
+
 def on_key_down(key):
-    global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak
+    global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak, casovac
     if vypnout:
-        if key == keys.A or key == keys.LEFT:
-            clock.schedule_interval(pohyb_do_stran, 0.1)
-        if key == keys.D or key == keys.RIGHT:
-            clock.schedule_interval(pohyb_do_stran, 0.1)
-        if key == keys.E:
-            otocka = otoc_kostku(1)
-            if can_move(vyska0, sirka0, otocka):
-                kostka = otocka
-        if key == keys.Q:
-            otocka = otoc_kostku(-1)
-            if can_move(vyska0, sirka0, otocka):
-                kostka = otocka
-        if key == keys.W:
-            pad = 0
-            koncime = 0
-            while koncime != 1:
-                if can_move(vyska0 + pad, sirka0):
-                    pad += 1
-                else:
-                    pad -= 1
-                    koncime = 1
-                    vyska0 = vyska0 + pad
         if key == keys.SPACE:
             if hlidani == 0:
-                clock.schedule_interval(padani, rychlostpadu / 100)
+                rychlost_padu()
+                casovac = time.time()
+                draw()
                 hlidani = 1
-        if key == keys.S:
-            pamatovak = rychlostpadu
-            rychlostpadu = 5
-            rychlost_padu()
+        if hlidani == 1:
+            if key == keys.A or key == keys.LEFT:
+                clock.schedule_interval(pohyb_do_stran, 0.1)
+            if key == keys.D or key == keys.RIGHT:
+                clock.schedule_interval(pohyb_do_stran, 0.1)
+            if key == keys.E:
+                otocka = otoc_kostku(1)
+                if can_move(vyska0, sirka0, otocka):
+                    kostka = otocka
+            if key == keys.Q:
+                otocka = otoc_kostku(-1)
+                if can_move(vyska0, sirka0, otocka):
+                    kostka = otocka
+            if key == keys.W:
+                pad = 0
+                koncime = 0
+                while koncime != 1:
+                    if can_move(vyska0 + pad, sirka0):
+                        pad += 1
+                    else:
+                        pad -= 1
+                        koncime = 1
+                        vyska0 = vyska0 + pad
+            if key == keys.S:
+                pamatovak = rychlostpadu
+                rychlostpadu = 5
+                rychlost_padu()
 
 
 
 def on_key_up(key):
     global rychlostpadu
     if vypnout:
-        if key == keys.S:
-            rychlostpadu = pamatovak
-            rychlost_padu()
-        if key == keys.A or key == keys.LEFT:
-            clock.unschedule(pohyb_do_stran)
-        if key == keys.D or key == keys.RIGHT:
-            clock.unschedule(pohyb_do_stran)
+        if hlidani == 1:
+            if key == keys.S:
+                rychlostpadu = pamatovak
+                rychlost_padu()
+            if key == keys.A or key == keys.LEFT:
+                clock.unschedule(pohyb_do_stran)
+            if key == keys.D or key == keys.RIGHT:
+                clock.unschedule(pohyb_do_stran)
 
 
 def on_mouse_down(pos):
-    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost
+    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost,casovac
     if not vypnout:
         if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu < pos[1] < 11 * pocet_pixelu:
-            print("konec")
             sys.exit("ukoncil/a jsi program")
         if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu and 14 * pocet_pixelu < pos[1] < 17 * pocet_pixelu:
-            print("restart")
             pady = 0
             scitani_kostek = 0
             scitani_rad = 0
             rychlostpadu = 100
             vypisovaci_rychlost = 100
             vypnout = True
+            casovac = time.time()
             clock.schedule_interval(padani, rychlostpadu / 100)
 
 
@@ -347,6 +353,8 @@ def nakresli_kostku_strana(x, y, rgb):
 
 
 
+def update():
+    draw()
 
 def draw():
     if vypnout:
@@ -371,6 +379,15 @@ def draw():
         screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="gray")
         screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 3) * pocet_pixelu), color="gray")
         screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (1 * pocet_pixelu, (vyska + 5) * pocet_pixelu), color="gray")
+        if hlidani == 1:
+            aktualnicas = time.time() - casovac
+            cashms = time.strftime("%H:%M:%S", time.gmtime(aktualnicas))
+            milisec = (aktualnicas - math.floor(aktualnicas)) * 1000
+            milisec = math.floor(milisec)
+            screen.draw.text(("time: " + cashms + ":" + str(milisec)), (13 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+                             color="green")
+        else:
+            screen.draw.text(("time: 00:00:00:000"), (13 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
     if not vypnout:
         screen.clear()
         screen.draw.text("GAME OVER", (2.5 * pocet_pixelu, 2 * pocet_pixelu), color="red", fontsize=100)
