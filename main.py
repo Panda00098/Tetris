@@ -19,6 +19,7 @@ for a in range(4):
 for a in range(4):
     kostka[1][a] = 1
 
+
 vyska0 = 0
 sirka0 = 5
 
@@ -126,7 +127,7 @@ def vyber_kostky(kde, kolikata):
         zasoba_kostek.append(random.randint(0, 6))
     if kde == 1:
         vybrana_kostka = zasoba_kostek[kolikata]
-#    vybrana_kostka = 0
+    #vybrana_kostka = 6
     nova_kostka = []
     for a in range(4):
         nova_kostka.append([0] * 4)
@@ -356,9 +357,12 @@ def nakresli_kostku_strana(x, y, rgb):
 def update():
     draw()
 
+
+konecni_cas = ""
+
 def draw():
     if vypnout:
-        global vyska0
+        global vyska0, konecny_caas
         screen.clear()
         for y, radek in enumerate(pole):
             for x, barva in enumerate(radek):
@@ -386,6 +390,7 @@ def draw():
             milisec = math.floor(milisec)
             screen.draw.text(("time: " + cashms + ":" + str(milisec)), (13 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
                              color="green")
+            konecny_caas = "time: " + cashms + ":" + str(milisec)
         else:
             screen.draw.text(("time: 00:00:00:000"), (13 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
     if not vypnout:
@@ -419,4 +424,5 @@ def draw():
             screen.draw.line(((6.5 - x) * pocet_pixelu, (14.9 - x) * pocet_pixelu), ((6.5 - x) * pocet_pixelu, (14.3 + x) * pocet_pixelu), barviska)
         screen.draw.text("quit", (10 * pocet_pixelu, 8.75 * pocet_pixelu), color="red", fontsize=45)
         screen.draw.text("restart", (10 * pocet_pixelu, 14.75 * pocet_pixelu), color="red", fontsize=45)
+        screen.draw.text(konecny_caas, (13 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
 pgzrun.go()
