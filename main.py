@@ -23,6 +23,15 @@ for a in range(4):
 vyska0 = 0
 sirka0 = 5
 
+pole = []
+for y in range(vyska):
+    radek = []
+    for x in range(sirka):
+        radek.append(0)
+    psani = open("C:\\Users\\Lukas\\PycharmProjects\\Tetris\\saved tetris.txt", "w")
+    psani.write(str(radek))
+    psani.close()
+
 
 pole = []
 for y in range(vyska):
@@ -232,10 +241,10 @@ def on_key_down(key):
         if hlidani == 1:
             if key == keys.A or key == keys.LEFT:
                 pohyb_do_stran_vlevo()
-                clock.schedule_interval(pohyb_do_stran_vlevo, 0.1)
+                clock.schedule_interval(pohyb_do_stran_vlevo, 0.15)
             if key == keys.D or key == keys.RIGHT:
                 pohyb_do_stran_vpravo()
-                clock.schedule_interval(pohyb_do_stran_vpravo, 0.1)
+                clock.schedule_interval(pohyb_do_stran_vpravo, 0.15)
             if key == keys.E:
                 otocka = otoc_kostku(1)
                 if can_move(vyska0, sirka0, otocka):
@@ -261,7 +270,6 @@ def on_key_down(key):
             if key == keys.ESCAPE:
                 clock.unschedule(padani)
                 cas_po_pauze = time.time() - casovac
-                print(cas_po_pauze)
                 hlidani = 0
 
 
@@ -280,7 +288,7 @@ def on_key_up(key):
 
 
 def on_mouse_down(pos):
-    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost,casovac
+    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost, casovac
     if not vypnout:
         if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu < pos[1] < 11 * pocet_pixelu:
             sys.exit("ukoncil/a jsi program")
@@ -394,22 +402,21 @@ def draw():
             vyber_kostky(1, c)
             jaka_barva_strana()
             nakresli_kostku_strana(17, 17 - c * 4, barvy[rgb_kostky_strany])
-        screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 2) * pocet_pixelu), color="green")
+        screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 2.5) * pocet_pixelu), color="green")
         screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 4) * pocet_pixelu), color="green")
-        screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (1 * pocet_pixelu, (vyska + 6) * pocet_pixelu), color="green")
-        screen.draw.text("SETTINGS: ", ((sirka - 1) * pocet_pixelu, (vyska + 2) * pocet_pixelu), color="dimgray")
-        screen.draw.text("left, right: a, d", (sirka * pocet_pixelu, (vyska + 3) * pocet_pixelu), color="dimgray")
-        screen.draw.text("turning: q, e", (sirka * pocet_pixelu, (vyska + 4) * pocet_pixelu), color="dimgray")
-        screen.draw.text("faster falling: s", (sirka * pocet_pixelu, (vyska + 5) * pocet_pixelu), color="dimgray")
-        screen.draw.text("port down: w", (sirka * pocet_pixelu, (vyska + 6) * pocet_pixelu), color="dimgray")
-        screen.draw.text("pause: esc", (sirka * pocet_pixelu, (vyska + 7) * pocet_pixelu), color="dimgray")
+        screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (1 * pocet_pixelu, (vyska + 5.5) * pocet_pixelu), color="green")
+        screen.draw.text("SETTINGS: ", ((sirka - 1) * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="dimgray")
+        screen.draw.text("left, right: a, d", (sirka * pocet_pixelu, (vyska + 2) * pocet_pixelu), color="dimgray")
+        screen.draw.text("turning: q, e", (sirka * pocet_pixelu, (vyska + 3) * pocet_pixelu), color="dimgray")
+        screen.draw.text("faster falling: s", (sirka * pocet_pixelu, (vyska + 4) * pocet_pixelu), color="dimgray")
+        screen.draw.text("port down: w", (sirka * pocet_pixelu, (vyska + 5) * pocet_pixelu), color="dimgray")
+        screen.draw.text("pause: esc", (sirka * pocet_pixelu, (vyska + 6) * pocet_pixelu), color="dimgray")
         if hlidani == 1:
             aktualnicas = time.time() - casovac
             cashms = time.strftime("%H:%M:%S", time.gmtime(aktualnicas))
             milisec = (aktualnicas - math.floor(aktualnicas)) * 1000
             milisec = math.floor(milisec)
-            screen.draw.text(("time: " + cashms + ":" + str(milisec)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
-                             color="green")
+            screen.draw.text(("time: " + cashms + ":" + str(milisec)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
             konecny_caas = "time: " + cashms + ":" + str(milisec)
         else:
             screen.draw.text("time: 00:00:00:000", (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
@@ -418,9 +425,9 @@ def draw():
         screen.clear()
         screen.draw.text("GAME OVER", (2.5 * pocet_pixelu, 2 * pocet_pixelu), color="red", fontsize=100)
         screen.draw.text("score:", (2.5 * pocet_pixelu, (vyska - 1) * pocet_pixelu), color="green", fontsize=40)
-        screen.draw.text(("destroyed layers: " + str(scitani_rad)), (2.5 * pocet_pixelu, (vyska + 2) * pocet_pixelu), color="green", fontsize=25)
-        screen.draw.text(("block placed: " + str(scitani_kostek)), (2.5 * pocet_pixelu, (vyska + 4) * pocet_pixelu), color="green", fontsize=25)
-        screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (2.5 * pocet_pixelu, (vyska + 6) * pocet_pixelu), color="green", fontsize=25)
+        screen.draw.text(("destroyed layers: " + str(scitani_rad)), (2.5 * pocet_pixelu, (vyska + 2.75) * pocet_pixelu), color="green", fontsize=25)
+        screen.draw.text(("block placed: " + str(scitani_kostek)), (2.5 * pocet_pixelu, (vyska + 4.5) * pocet_pixelu), color="green", fontsize=25)
+        screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (2.5 * pocet_pixelu, (vyska + 6.25) * pocet_pixelu), color="green", fontsize=25)
         for x in range(2):
             r = Rect((5 * pocet_pixelu, (8 + x * 6) * pocet_pixelu), (3 * pocet_pixelu, 3 * pocet_pixelu))
             barviska = (0xff, 0x00, 0x00)
