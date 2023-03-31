@@ -3,7 +3,7 @@ import random
 import sys
 import pgzrun
 import copy
-import keyboard
+#import keyboard
 import time
 
 sirka = 15
@@ -22,14 +22,35 @@ for a in range(4):
 
 vyska0 = 0
 sirka0 = 5
-
-
 pole = []
-for y in range(vyska):
-    radek = []
-    for x in range(sirka):
-        radek.append(0)
-    pole.append(radek)
+
+vzpominani = open("C:\\Users\\black\\PycharmProjects\\Tetris\\saved_tetris.txt", "r")
+for a in range(vyska):
+    pole.append(list(map(int, vzpominani.readline().strip().split())))
+
+
+
+    radek = vzpominani.readline()
+    if radek != "\n":
+        print(radek)
+        for vzpominani_y in range(vyska):
+            radek_pole = list(map(int, radek.lstrip().split()))
+            pole.append(radek_pole)
+            if not vzpominani_y == vyska:
+                radek = vzpominani.readline()
+    else:
+        print("nefunguje to")
+        pole = []
+        for y in range(vyska):
+            radek = []
+            for x in range(sirka):
+                radek.append(0)
+            pole.append(radek)
+        break
+
+
+
+
 
 pady = 0
 scitani_kostek = 0
@@ -263,6 +284,22 @@ def on_key_down(key):
                 cas_po_pauze = time.time() - casovac
                 print(cas_po_pauze)
                 hlidani = 0
+            if key == keys.K_0:
+                vypis = open("C:\\Users\\black\\PycharmProjects\\Tetris\\saved_tetris.txt", "w")
+                for vypis_y in range(vyska):
+                    ukladani = " ".join(map(str, pole[vypis_y])) + "\n"
+                    vypis.write(ukladani)
+                vypis.write("\n" + str(vyska0) + "\n" + str(sirka0) + "\n" * 2)
+                for vypis_y in range(4):
+                    ukladani = " ".join(map(str, kostka[vypis_y])) + "\n"
+                    vypis.write(ukladani)
+                vypis.write("\n" + " ".join(map(str, zasoba_kostek)))
+                vypis.close()
+                sys.exit("saved")
+
+
+
+
 
 
 
@@ -447,6 +484,7 @@ def draw():
         screen.draw.text("restart", (10 * pocet_pixelu, 14.75 * pocet_pixelu), color="red", fontsize=45)
         screen.draw.text(konecny_caas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
 pgzrun.go()
+
 
 
 #save, upload
