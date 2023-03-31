@@ -22,23 +22,35 @@ for a in range(4):
 
 vyska0 = 0
 sirka0 = 5
-
 pole = []
-for y in range(vyska):
-    radek = []
-    for x in range(sirka):
-        radek.append(0)
-    psani = open("C:\\Users\\Lukas\\PycharmProjects\\Tetris\\saved tetris.txt", "w")
-    psani.write(str(radek))
-    psani.close()
+
+vzpominani = open("C:\\Users\\black\\PycharmProjects\\Tetris\\saved_tetris.txt", "r")
+for a in range(vyska):
+    pole.append(list(map(int, vzpominani.readline().strip().split())))
 
 
-pole = []
-for y in range(vyska):
-    radek = []
-    for x in range(sirka):
-        radek.append(0)
-    pole.append(radek)
+
+    radek = vzpominani.readline()
+    if radek != "\n":
+        print(radek)
+        for vzpominani_y in range(vyska):
+            radek_pole = list(map(int, radek.lstrip().split()))
+            pole.append(radek_pole)
+            if not vzpominani_y == vyska:
+                radek = vzpominani.readline()
+    else:
+        print("nefunguje to")
+        pole = []
+        for y in range(vyska):
+            radek = []
+            for x in range(sirka):
+                radek.append(0)
+            pole.append(radek)
+        break
+
+
+
+
 
 pady = 0
 scitani_kostek = 0
@@ -270,7 +282,24 @@ def on_key_down(key):
             if key == keys.ESCAPE:
                 clock.unschedule(padani)
                 cas_po_pauze = time.time() - casovac
+                print(cas_po_pauze)
                 hlidani = 0
+            if key == keys.K_0:
+                vypis = open("C:\\Users\\black\\PycharmProjects\\Tetris\\saved_tetris.txt", "w")
+                for vypis_y in range(vyska):
+                    ukladani = " ".join(map(str, pole[vypis_y])) + "\n"
+                    vypis.write(ukladani)
+                vypis.write("\n" + str(vyska0) + "\n" + str(sirka0) + "\n" * 2)
+                for vypis_y in range(4):
+                    ukladani = " ".join(map(str, kostka[vypis_y])) + "\n"
+                    vypis.write(ukladani)
+                vypis.write("\n" + " ".join(map(str, zasoba_kostek)))
+                vypis.close()
+                sys.exit("saved")
+
+
+
+
 
 
 
@@ -288,7 +317,7 @@ def on_key_up(key):
 
 
 def on_mouse_down(pos):
-    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost, casovac
+    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost,casovac
     if not vypnout:
         if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu < pos[1] < 11 * pocet_pixelu:
             sys.exit("ukoncil/a jsi program")
