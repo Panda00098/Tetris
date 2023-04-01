@@ -483,6 +483,8 @@ def draw():
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
         screen.draw.text("pause: esc", (sirka * pocet_pixelu, (vyska + 6) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("save: 0; )", (sirka * pocet_pixelu, (vyska + 7) * pocet_pixelu),
+                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
         if hlidani == 1:
             aktualnicas = time.time() - casovac
             cashms = time.strftime("%H:%M:%S", time.gmtime(aktualnicas))
