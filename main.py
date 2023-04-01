@@ -1,46 +1,55 @@
 import math
 import random
 import sys
+import os
 import pgzrun
 import copy
 import time
 
-sirka = 15
-vyska = 21  # 21
+sirka = 8
+vyska = 10  # 21
 pocet_pixelu = 25
 
-WIDTH = (sirka + 7) * pocet_pixelu
-HEIGHT = (vyska + 8) * pocet_pixelu
+
 
 kostka = []
-
-
 
 vyska0 = 0
 sirka0 = round(sirka / 2) - 2
 pole = []
 zasoba_kostek = []
 
-#vzpominani = open("C:\\Users\\black\\PycharmProjects\\Tetris\\saved_tetris.txt", "r")
-vzpominani = open("C:\\Users\\Lukas\\PycharmProjects\\Tetris\\saved_tetris.txt", "r")
-if vzpominani.readline() != "":
-    saved = 1
-    vzpominani.seek(0)
-    for y in range(vyska):
-        pole.append(list(map(int, vzpominani.readline().strip().split())))
-    vyska0 = int(vzpominani.readline().strip())
-    sirka0 = int(vzpominani.readline().strip())
-    for y in range(4):
-        kostka.append(list(map(int, vzpominani.readline().strip().split())))
-    zasoba_kostek = list(map(int, vzpominani.readline().strip().split()))
-    rychlostpadu = int(vzpominani.readline().strip())
-    vypisovaci_rychlost = int(vzpominani.readline().strip())
-    konecny_cas = vzpominani.readline().strip()
-    aktualnicas = float(vzpominani.readline().strip())
-    scitani_rad = int(vzpominani.readline().strip())
-    scitani_kostek = int(vzpominani.readline().strip())
-    pady = int(vzpominani.readline().strip())
-else:
+
+try:
+    vzpominani = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "r")
+    if vzpominani.readline() != "":
+        saved = 1
+        vzpominani.seek(0)
+        vyska = int(vzpominani.readline().strip())
+        sirka = int(vzpominani.readline().strip())
+        for y in range(vyska):
+            pole.append(list(map(int, vzpominani.readline().strip().split())))
+        vyska0 = int(vzpominani.readline().strip())
+        sirka0 = int(vzpominani.readline().strip())
+        for y in range(4):
+            kostka.append(list(map(int, vzpominani.readline().strip().split())))
+        zasoba_kostek = list(map(int, vzpominani.readline().strip().split()))
+        rychlostpadu = int(vzpominani.readline().strip())
+        vypisovaci_rychlost = int(vzpominani.readline().strip())
+        konecny_cas = vzpominani.readline().strip()
+        aktualnicas = float(vzpominani.readline().strip())
+        scitani_rad = int(vzpominani.readline().strip())
+        scitani_kostek = int(vzpominani.readline().strip())
+        pady = int(vzpominani.readline().strip())
+    else:
+        saved = 0
+        pole = []
+        for y in range(vyska):
+            radek = []
+            for x in range(sirka):
+                radek.append(0)
+            pole.append(radek)
+except FileNotFoundError:
     saved = 0
     pole = []
     for y in range(vyska):
@@ -48,6 +57,10 @@ else:
         for x in range(sirka):
             radek.append(0)
         pole.append(radek)
+
+
+WIDTH = (sirka + 7) * pocet_pixelu
+HEIGHT = (vyska + 8) * pocet_pixelu
 
 
 if saved == 0:
@@ -136,6 +149,8 @@ def konec():
             kostka_stranou.append([0] * 4)
         zrychli_pohyb = False
         pamatovak = 0
+        vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
+        vypis.close()
 
 
 
@@ -319,9 +334,6 @@ def on_mouse_down(pos):
     global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost,casovac
     if not vypnout:
         if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu < pos[1] < 11 * pocet_pixelu:
-            # vypis = open("C:\\Users\\black\\PycharmProjects\\Tetris\\saved_tetris.txt", "w")
-            vypis = open("C:\\Users\\Lukas\\PycharmProjects\\Tetris\\saved_tetris.txt", "w")
-            vypis.close()
             sys.exit("ukoncil/a jsi program")
         if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu and 14 * pocet_pixelu < pos[1] < 17 * pocet_pixelu:
             pady = 0
@@ -332,16 +344,14 @@ def on_mouse_down(pos):
             vypnout = True
             casovac = time.time()
             clock.schedule_interval(padani, rychlostpadu / 100)
-            # vypis = open("C:\\Users\\black\\PycharmProjects\\Tetris\\saved_tetris.txt", "w")
-            vypis = open("C:\\Users\\Lukas\\PycharmProjects\\Tetris\\saved_tetris.txt", "w")
-            vypis.close()
+
 
 
 
 
 def ukladani_do_souboru():
-    #vypis = open("C:\\Users\\black\\PycharmProjects\\Tetris\\saved_tetris.txt", "w")
-    vypis = open("C:\\Users\\Lukas\\PycharmProjects\\Tetris\\saved_tetris.txt", "w")
+    vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
+    vypis.write(str(vyska) + "\n" + str(sirka) + "\n")
     for vypis_y in range(vyska):
         ukladani = " ".join(map(str, pole[vypis_y])) + "\n"
         vypis.write(ukladani)
@@ -455,39 +465,51 @@ def draw():
             vyber_kostky(1, c)
             jaka_barva_strana()
             nakresli_kostku_strana(sirka + 1, vyska - 4 - c * 4, barvy[rgb_kostky_strany])
-        screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 2.5) * pocet_pixelu), color="green")
-        screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 4) * pocet_pixelu), color="green")
-        screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (1 * pocet_pixelu, (vyska + 5.5) * pocet_pixelu), color="green")
-        screen.draw.text("SETTINGS: ", ((sirka - 1) * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="dimgray")
-        screen.draw.text("left, right: a, d", (sirka * pocet_pixelu, (vyska + 2) * pocet_pixelu), color="dimgray")
-        screen.draw.text("turning: q, e", (sirka * pocet_pixelu, (vyska + 3) * pocet_pixelu), color="dimgray")
-        screen.draw.text("faster falling: s", (sirka * pocet_pixelu, (vyska + 4) * pocet_pixelu), color="dimgray")
-        screen.draw.text("port down: w", (sirka * pocet_pixelu, (vyska + 5) * pocet_pixelu), color="dimgray")
-        screen.draw.text("pause: esc", (sirka * pocet_pixelu, (vyska + 6) * pocet_pixelu), color="dimgray")
+        screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 2.5) * pocet_pixelu),
+                         color="green", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 4) * pocet_pixelu),
+                         color="green", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (1 * pocet_pixelu, (vyska + 5.5) * pocet_pixelu),
+                         color="green", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("SETTINGS: ", ((sirka - 1) * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("left, right: a, d", (sirka * pocet_pixelu, (vyska + 2) * pocet_pixelu),
+                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("turning: q, e", (sirka * pocet_pixelu, (vyska + 3) * pocet_pixelu),
+                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("faster falling: s", (sirka * pocet_pixelu, (vyska + 4) * pocet_pixelu),
+                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("port down: w", (sirka * pocet_pixelu, (vyska + 5) * pocet_pixelu),
+                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("pause: esc", (sirka * pocet_pixelu, (vyska + 6) * pocet_pixelu),
+                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
         if hlidani == 1:
             aktualnicas = time.time() - casovac
             cashms = time.strftime("%H:%M:%S", time.gmtime(aktualnicas))
             milisec = (aktualnicas - math.floor(aktualnicas)) * 1000
             milisec = math.floor(milisec)
-            screen.draw.text(("time: " + cashms + ":" + str(milisec)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
+            screen.draw.text(("time: " + cashms + ":" + str(milisec)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+                             color="green", fontsize=pocet_pixelu * (24 / 25))
             konecny_cas = "time: " + cashms + ":" + str(milisec)
         else:
             if saved == 0:
-                screen.draw.text("time: 00:00:00:000", (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
+                screen.draw.text("time: 00:00:00:000", (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+                                 color="green", fontsize=pocet_pixelu * (24 / 25))
             else:
-                screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
+                screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+                                 color="green", fontsize=pocet_pixelu * (24 / 25))
             screen.draw.text("Press SPACE", ((sirka / 10) * pocet_pixelu, (vyska / 2 - 1) * pocet_pixelu), color="black",
-                             fontsize=sirka * (70 / 15))
+                             fontsize=pocet_pixelu * (sirka * (70 / 15)) / 25)
     if not vypnout:
         screen.clear()
-        screen.draw.text("GAME OVER", (2.5 * pocet_pixelu, 2 * pocet_pixelu), color="red", fontsize=100)
-        screen.draw.text("score:", (2.5 * pocet_pixelu, (vyska - 1) * pocet_pixelu), color="green", fontsize=40)
+        screen.draw.text("GAME OVER", (2.5 * pocet_pixelu, 2 * pocet_pixelu), color="red", fontsize=pocet_pixelu * 4)
+        screen.draw.text("score:", (2.5 * pocet_pixelu, (vyska - 1) * pocet_pixelu), color="green", fontsize=pocet_pixelu * (40 / 25))
         screen.draw.text(("destroyed layers: " + str(scitani_rad)),
-                         (2.5 * pocet_pixelu, (vyska + 2.75) * pocet_pixelu), color="green", fontsize=25)
+                         (2.5 * pocet_pixelu, (vyska + 2.75) * pocet_pixelu), color="green", fontsize=pocet_pixelu)
         screen.draw.text(("block placed: " + str(scitani_kostek)),
-                         (2.5 * pocet_pixelu, (vyska + 4.5) * pocet_pixelu), color="green", fontsize=25)
+                         (2.5 * pocet_pixelu, (vyska + 4.5) * pocet_pixelu), color="green", fontsize=pocet_pixelu)
         screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)),
-                         (2.5 * pocet_pixelu, (vyska + 6.25) * pocet_pixelu), color="green", fontsize=25)
+                         (2.5 * pocet_pixelu, (vyska + 6.25) * pocet_pixelu), color="green", fontsize=pocet_pixelu)
         for x in range(2):
             r = Rect((5 * pocet_pixelu, (8 + x * 6) * pocet_pixelu), (3 * pocet_pixelu, 3 * pocet_pixelu))
             barviska = (0xff, 0x00, 0x00)
@@ -511,9 +533,9 @@ def draw():
             x /= 50
             screen.draw.line(((6.5 - x) * pocet_pixelu, (14.9 - x) * pocet_pixelu),
                              ((6.5 - x) * pocet_pixelu, (14.3 + x) * pocet_pixelu), barviska)
-        screen.draw.text("quit", (10 * pocet_pixelu, 8.75 * pocet_pixelu), color="red", fontsize=45)
-        screen.draw.text("restart", (10 * pocet_pixelu, 14.75 * pocet_pixelu), color="red", fontsize=45)
-        screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green")
+        screen.draw.text("quit", (10 * pocet_pixelu, 8.75 * pocet_pixelu), color="red", fontsize=pocet_pixelu * (45 / 25))
+        screen.draw.text("restart", (10 * pocet_pixelu, 14.75 * pocet_pixelu), color="red", fontsize=pocet_pixelu * (40 / 25))
+        screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green", fontsize=pocet_pixelu * (24 / 25))
 pgzrun.go()
 
 
