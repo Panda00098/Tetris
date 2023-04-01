@@ -6,8 +6,8 @@ import pgzrun
 import copy
 import time
 
-sirka = 8
-vyska = 10  # 21
+sirka = 15
+vyska = 21  # 21
 pocet_pixelu = 25
 
 
