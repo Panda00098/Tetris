@@ -1,1 +1,2 @@
-pyinstaller .\main.spec
+.\venv\Scripts\pyinstaller .\main.spec
+pause
