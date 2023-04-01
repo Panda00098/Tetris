@@ -131,26 +131,28 @@ def niceni():
 def konec():
     global koncici_obrazovka, pole, zrychli_pohyb, pamatovak, zasoba_kostek, kostka_stranou, vypnout
     vyber_kostky(0, 0)
-    if not can_move(1, 5):
-        vypnout = False
-        clock.unschedule(padani)
-        draw()
-        pole = []
-        for y in range(vyska):
-            radek = []
-            for x in range(sirka):
-                radek.append(0)
-            pole.append(radek)
-        zasoba_kostek = []
-        for x in range(5):
-            zasoba_kostek.append(random.randint(0, 6))
-        kostka_stranou = []
-        for a in range(4):
-            kostka_stranou.append([0] * 4)
-        zrychli_pohyb = False
-        pamatovak = 0
-        vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
-        vypis.close()
+    for m in range(4):
+        for n in range(sirka0, sirka0 + 4):
+            if not can_move(vyska0 + 1, sirka0) or pole[m][n] > 0:
+                vypnout = False
+                clock.unschedule(padani)
+                draw()
+                pole = []
+                for y in range(vyska):
+                    radek = []
+                    for x in range(sirka):
+                        radek.append(0)
+                    pole.append(radek)
+                zasoba_kostek = []
+                for x in range(5):
+                    zasoba_kostek.append(random.randint(0, 6))
+                kostka_stranou = []
+                for a in range(4):
+                    kostka_stranou.append([0] * 4)
+                zrychli_pohyb = False
+                pamatovak = 0
+                vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
+                vypis.close()
 
 
 
