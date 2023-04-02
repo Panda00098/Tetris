@@ -60,7 +60,7 @@ except FileNotFoundError:
 
 
 WIDTH = (sirka + 7) * pocet_pixelu
-HEIGHT = (vyska + 8) * pocet_pixelu
+HEIGHT = (vyska + 9) * pocet_pixelu
 
 
 if saved == 0:
@@ -83,7 +83,7 @@ def padani():
                 if kostka[ukladanix][ukladaniy] != 0:
                     pole[vyska0 + ukladanix][sirka0 + ukladaniy] = kostka[ukladanix][ukladaniy]
         vyska0 = 0
-        sirka0 = 5
+        sirka0 = round(sirka / 2) - 2
         konec()
         niceni()
         scitani_kostek += 1
@@ -101,7 +101,9 @@ def padani():
                     rychlost_padu()
         pady += 1
     else:
-        vyska0 = vyska0 + 1
+        vyska0 += 1
+        if not can_move(vyska0 + 1, sirka0):
+            clock.schedule(padani, 0.2)
 
 
 
@@ -304,6 +306,7 @@ def on_key_down(key):
                         pad -= 1
                         koncime = 1
                         vyska0 += pad
+                clock.schedule(padani, 0.2)
             if key == keys.S:
                 pamatovak = rychlostpadu
                 rychlostpadu = 5
@@ -311,6 +314,9 @@ def on_key_down(key):
             if key == keys.ESCAPE:
                 clock.unschedule(padani)
                 hlidani = 0
+            if key == keys.BACKSPACE:
+                vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
+                vypis.close()
 
 
 
@@ -473,19 +479,21 @@ def draw():
                          color="green", fontsize=pocet_pixelu * (24 / 25))
         screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (1 * pocet_pixelu, (vyska + 5.5) * pocet_pixelu),
                          color="green", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("SETTINGS: ", ((sirka - 1) * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+        screen.draw.text("SETTINGS: ", ((sirka - 3) * pocet_pixelu, (vyska + 1) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("left, right: a, d", (sirka * pocet_pixelu, (vyska + 2) * pocet_pixelu),
+        screen.draw.text("left, right: a, d", ((sirka - 2) * pocet_pixelu, (vyska + 2) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("turning: q, e", (sirka * pocet_pixelu, (vyska + 3) * pocet_pixelu),
+        screen.draw.text("turning: q, e", ((sirka - 2) * pocet_pixelu, (vyska + 3) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("faster falling: s", (sirka * pocet_pixelu, (vyska + 4) * pocet_pixelu),
+        screen.draw.text("faster falling: s", ((sirka - 2) * pocet_pixelu, (vyska + 4) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("port down: w", (sirka * pocet_pixelu, (vyska + 5) * pocet_pixelu),
+        screen.draw.text("port down: w", ((sirka - 2) * pocet_pixelu, (vyska + 5) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("pause: esc", (sirka * pocet_pixelu, (vyska + 6) * pocet_pixelu),
+        screen.draw.text("pause: esc", ((sirka - 2) * pocet_pixelu, (vyska + 6) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("save: 0; )", (sirka * pocet_pixelu, (vyska + 7) * pocet_pixelu),
+        screen.draw.text("save: 0; )", ((sirka - 2) * pocet_pixelu, (vyska + 7) * pocet_pixelu),
+                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("remove save: backspace", ((sirka - 2) * pocet_pixelu, (vyska + 8) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
         if hlidani == 1:
             aktualnicas = time.time() - casovac
