@@ -561,5 +561,4 @@ def draw():
 pgzrun.go()
 
 
-#save, upload
 #pygame (pygame zero nee)
