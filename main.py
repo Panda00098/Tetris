@@ -18,6 +18,7 @@ vyska0 = 0
 sirka0 = round(sirka / 2) - 2
 pole = []
 zasoba_kostek = []
+pointcounter = 0
 
 
 try:
@@ -41,6 +42,9 @@ try:
         scitani_rad = int(vzpominani.readline().strip())
         scitani_kostek = int(vzpominani.readline().strip())
         pady = int(vzpominani.readline().strip())
+        pointcounter = int(vzpominani.readline().strip())
+        vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
+        vypis.close()
     else:
         saved = 0
         pole = []
@@ -75,8 +79,10 @@ if saved == 0:
     scitani_kostek = 0
     vypisovaci_rychlost = 100
 
+
+
 def padani():
-    global vyska0, sirka0, rychlostpadu, pady, scitani_kostek, neomezenarychlost, vypisovaci_rychlost
+    global vyska0, sirka0, rychlostpadu, pady, scitani_kostek, neomezenarychlost, vypisovaci_rychlost, pointcounter, bodovani
     if not can_move(vyska0 + 1, sirka0):
         for ukladanix in range(4):
             for ukladaniy in range(4):
@@ -100,20 +106,23 @@ def padani():
                     pady = 0
                     rychlost_padu()
         pady += 1
+        pointcounter += bodovani
     else:
         vyska0 += 1
         if not can_move(vyska0 + 1, sirka0):
             clock.schedule(padani, 0.2)
+        bodovani = 0
 
 
 
 
 
-
-scitani_rad = 0
+bodovani = 0
+if saved == 0:
+    scitani_rad = 0
 
 def niceni():
-    global pole, scitani_rad
+    global pole, scitani_rad, bodovani
     nicici_pole = copy.deepcopy(pole)
     for niceniy in range(vyska):
         scitani = 0
@@ -127,11 +136,15 @@ def niceni():
             nicici_pole[0] = [0] * sirka
             pole = nicici_pole
             niceni()
+            if bodovani == 0:
+                bodovani += 1
+            else:
+                bodovani = bodovani * 2
             break
 
 
 def konec():
-    global koncici_obrazovka, pole, zrychli_pohyb, pamatovak, zasoba_kostek, kostka_stranou, vypnout
+    global koncici_obrazovka, pole, zrychli_pohyb, pamatovak, zasoba_kostek, kostka_stranou, vypnout, pointcounter
     vyber_kostky(0, 0)
     for m in range(4):
         for n in range(sirka0, sirka0 + 4):
@@ -153,8 +166,8 @@ def konec():
                     kostka_stranou.append([0] * 4)
                 zrychli_pohyb = False
                 pamatovak = 0
-                vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
-                vypis.close()
+                pointcounter = 0
+
 
 
 
@@ -234,8 +247,8 @@ def can_move(x, y, co=None):
     return True
 
 
-
-rychlostpadu = 100
+if saved == 0:
+    rychlostpadu = 100
 
 def rychlost_padu():
     clock.unschedule(padani)
@@ -314,9 +327,7 @@ def on_key_down(key):
             if key == keys.ESCAPE:
                 clock.unschedule(padani)
                 hlidani = 0
-            if key == keys.BACKSPACE:
-                vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
-                vypis.close()
+
 
 
 
@@ -368,9 +379,8 @@ def ukladani_do_souboru():
         ukladani = " ".join(map(str, kostka[vypis_y])) + "\n"
         vypis.write(ukladani)
     vypis.write(" ".join(map(str, zasoba_kostek)) + "\n")
-    vypis.write(
-        str(rychlostpadu) + "\n" + str(vypisovaci_rychlost) + "\n" + konecny_cas + "\n" + str(aktualnicas) + "\n" + str(
-            scitani_rad) + "\n" + str(scitani_kostek) + "\n" + str(pady) + "\n")
+    vypis.write(str(rychlostpadu) + "\n" + str(vypisovaci_rychlost) + "\n" + konecny_cas + "\n" + str(aktualnicas) + "\n" + str(
+            scitani_rad) + "\n" + str(scitani_kostek) + "\n" + str(pady) + "\n" + str(pointcounter) + "\n")
     vypis.close()
     sys.exit("saved")
 
@@ -479,6 +489,8 @@ def draw():
                          color="green", fontsize=pocet_pixelu * (24 / 25))
         screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (1 * pocet_pixelu, (vyska + 5.5) * pocet_pixelu),
                          color="green", fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text(("points: " + str(pointcounter * 10)), (1 * pocet_pixelu, (vyska + 7) * pocet_pixelu),
+                         color="green", fontsize=pocet_pixelu * (24 / 25))
         screen.draw.text("SETTINGS: ", ((sirka - 3) * pocet_pixelu, (vyska + 1) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
         screen.draw.text("left, right: a, d", ((sirka - 2) * pocet_pixelu, (vyska + 2) * pocet_pixelu),
@@ -492,8 +504,6 @@ def draw():
         screen.draw.text("pause: esc", ((sirka - 2) * pocet_pixelu, (vyska + 6) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
         screen.draw.text("save: 0; )", ((sirka - 2) * pocet_pixelu, (vyska + 7) * pocet_pixelu),
-                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("remove save: backspace", ((sirka - 2) * pocet_pixelu, (vyska + 8) * pocet_pixelu),
                          color="dimgray", fontsize=pocet_pixelu * (24 / 25))
         if hlidani == 1:
             aktualnicas = time.time() - casovac
