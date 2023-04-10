@@ -6,16 +6,20 @@ import pgzrun
 import copy
 import time
 
+
 sirka = 15
 vyska = 21  # 21
 pocet_pixelu = 25
 
+music.play("minefield")
+music.set_volume(0.1)
 
 
 kostka = []
 
 vyska0 = 0
 sirka0 = round(sirka / 2) - 2
+
 pole = []
 zasoba_kostek = []
 pointcounter = 0
@@ -63,7 +67,7 @@ except FileNotFoundError:
         pole.append(radek)
 
 
-WIDTH = (sirka + 7) * pocet_pixelu
+WIDTH = (sirka + 9) * pocet_pixelu
 HEIGHT = (vyska + 9) * pocet_pixelu
 
 
@@ -167,6 +171,7 @@ def konec():
                 zrychli_pohyb = False
                 pamatovak = 0
                 pointcounter = 0
+                music.fadeout(1)
 
 
 
@@ -271,7 +276,7 @@ def otoc_kostku(smer):
 
 
 
-hlidani = 0
+hlidani = False
 zrychli_pohyb = False
 pamatovak = 0
 vypnout = True
@@ -282,51 +287,55 @@ cas_po_pauze = 0
 
 
 def on_key_down(key):
-    global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak, casovac
-    if vypnout:
-        if key == keys.K_0:
-            ukladani_do_souboru()
-        if key == keys.SPACE:
-            if hlidani == 0:
-                casovac = time.time()
-                if saved == 1:
-                    casovac -= aktualnicas
-                rychlost_padu()
-                draw()
-                hlidani = 1
-        if hlidani == 1:
-            if key == keys.A or key == keys.LEFT:
-                pohyb_do_stran_vlevo()
-                clock.schedule_interval(pohyb_do_stran_vlevo, 0.15)
-            if key == keys.D or key == keys.RIGHT:
-                pohyb_do_stran_vpravo()
-                clock.schedule_interval(pohyb_do_stran_vpravo, 0.15)
-            if key == keys.E:
-                otocka = otoc_kostku(1)
-                if can_move(vyska0, sirka0, otocka):
-                    kostka = otocka
-            if key == keys.Q:
-                otocka = otoc_kostku(-1)
-                if can_move(vyska0, sirka0, otocka):
-                    kostka = otocka
-            if key == keys.W:
-                pad = 0
-                koncime = 0
-                while koncime != 1:
-                    if can_move(vyska0 + pad, sirka0):
-                        pad += 1
-                    else:
-                        pad -= 1
-                        koncime = 1
-                        vyska0 += pad
-                clock.schedule(padani, 0.2)
-            if key == keys.S:
-                pamatovak = rychlostpadu
-                rychlostpadu = 5
-                rychlost_padu()
-            if key == keys.ESCAPE:
-                clock.unschedule(padani)
-                hlidani = 0
+    global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak, casovac, settings
+    if not settings:
+        if vypnout:
+            if key == keys.K_0:
+                ukladani_do_souboru()
+            if key == keys.SPACE:
+                if not hlidani:
+                    casovac = time.time()
+                    if saved == 1:
+                        casovac -= aktualnicas
+                    rychlost_padu()
+                    draw()
+                    hlidani = True
+            if hlidani:
+                if key == keys.A or key == keys.LEFT:
+                    pohyb_do_stran_vlevo()
+                    clock.schedule_interval(pohyb_do_stran_vlevo, 0.15)
+                if key == keys.D or key == keys.RIGHT:
+                    pohyb_do_stran_vpravo()
+                    clock.schedule_interval(pohyb_do_stran_vpravo, 0.15)
+                if key == keys.E:
+                    otocka = otoc_kostku(1)
+                    if can_move(vyska0, sirka0, otocka):
+                        kostka = otocka
+                if key == keys.Q:
+                    otocka = otoc_kostku(-1)
+                    if can_move(vyska0, sirka0, otocka):
+                        kostka = otocka
+                if key == keys.W:
+                    pad = 0
+                    koncime = 0
+                    while koncime != 1:
+                        if can_move(vyska0 + pad, sirka0):
+                            pad += 1
+                        else:
+                            pad -= 1
+                            koncime = 1
+                            vyska0 += pad
+                    clock.schedule(padani, 0.2)
+                if key == keys.S:
+                    pamatovak = rychlostpadu
+                    rychlostpadu = 5
+                    rychlost_padu()
+                if key == keys.ESCAPE:
+                    clock.unschedule(padani)
+                    hlidani = False
+    if settings:
+        if key == keys.ESCAPE:
+            settings = False
 
 
 
@@ -337,7 +346,7 @@ def on_key_down(key):
 def on_key_up(key):
     global rychlostpadu
     if vypnout:
-        if hlidani == 1:
+        if hlidani:
             if key == keys.S:
                 rychlostpadu = pamatovak
                 rychlost_padu()
@@ -347,22 +356,53 @@ def on_key_up(key):
                 clock.unschedule(pohyb_do_stran_vpravo)
 
 
-
-
+settings = False
+mastervolume = 50
+music.set_volume(mastervolume / 100)
+pohyb_mysi = False
 def on_mouse_down(pos):
-    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost,casovac
-    if not vypnout:
-        if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu < pos[1] < 11 * pocet_pixelu:
-            sys.exit("ukoncil/a jsi program")
-        if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu and 14 * pocet_pixelu < pos[1] < 17 * pocet_pixelu:
-            pady = 0
-            scitani_kostek = 0
-            scitani_rad = 0
-            rychlostpadu = 100
-            vypisovaci_rychlost = 100
-            vypnout = True
-            casovac = time.time()
-            clock.schedule_interval(padani, rychlostpadu / 100)
+    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost, casovac, settings, mastervolume, pohyb_mysi
+    if not settings:
+        if not vypnout:
+            if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu < pos[1] < 11 * pocet_pixelu:
+                sys.exit("ukoncil/a jsi program")
+            if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu and 14 * pocet_pixelu < pos[1] < 17 * pocet_pixelu:
+                pady = 0
+                scitani_kostek = 0
+                scitani_rad = 0
+                rychlostpadu = 100
+                vypisovaci_rychlost = 100
+                vypnout = True
+                casovac = time.time()
+                clock.schedule_interval(padani, rychlostpadu / 100)
+        q = [(sirka + 6) * pocet_pixelu + 28, 28]
+        if math.dist(pos, q) <= 28:
+            settings = True
+            clock.unschedule(padani)
+    if settings:
+        if 3 * pocet_pixelu > pos[1] > 2 * pocet_pixelu < pos[0] < pocet_pixelu * (300 / 25) + 2 * pocet_pixelu:
+            mastervolume = (pos[0] - 2 * pocet_pixelu) / 3
+            pohyb_mysi = True
+
+
+def on_mouse_up():
+    global pohyb_mysi
+    pohyb_mysi = False
+#    music.set_volume(mastervolume / 100)
+
+
+def on_mouse_move(pos):
+    global mastervolume
+    if pohyb_mysi:
+        if 3 * pocet_pixelu > pos[1] > 2 * pocet_pixelu < pos[0] < pocet_pixelu * (300 / 25) + 2 * pocet_pixelu:
+            mastervolume = (pos[0] - 2 * pocet_pixelu) / 3
+            music.set_volume(mastervolume / 100)
+        if 3 * pocet_pixelu > pos[1] > 2 * pocet_pixelu > pos[0] < pocet_pixelu * (300 / 25) + 2 * pocet_pixelu:
+            mastervolume = 0
+            music.set_volume(mastervolume / 100)
+        if 3 * pocet_pixelu > pos[1] > 2 * pocet_pixelu < pos[0] > pocet_pixelu * (300 / 25) + 2 * pocet_pixelu:
+            mastervolume = 100
+            music.set_volume(mastervolume / 100)
 
 
 
@@ -461,103 +501,112 @@ def update():
 
 def draw():
     global vyska0, barvy, konecny_cas, aktualnicas
-    if vypnout:
-        screen.clear()
-        if hlidani == 1:
-            barvy = barva_kompletni
-        else:
-            barvy = barva_mensiho_jasu
-        for y, radek in enumerate(pole):
-            for x, barva in enumerate(radek):
-                r = Rect((x * pocet_pixelu, y * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
-                rgb = barvy[barva]
-                screen.draw.filled_rect(r, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
-        zkvyska = vyska0
-        while can_move(zkvyska, sirka0):
-            zkvyska += 1
-        zkvyska -= 1
-        nakresli_kostku(sirka0, zkvyska, 0xdcdcdc)
-        jaka_barva()
-        nakresli_kostku(sirka0, vyska0, barvy[rgb_kostky])
-        for c in range(round(vyska / 4)):
-            vyber_kostky(1, c)
-            jaka_barva_strana()
-            nakresli_kostku_strana(sirka + 1, vyska - 4 - c * 4, barvy[rgb_kostky_strany])
-        screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 2.5) * pocet_pixelu),
-                         color="green", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 4) * pocet_pixelu),
-                         color="green", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (1 * pocet_pixelu, (vyska + 5.5) * pocet_pixelu),
-                         color="green", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text(("points: " + str(pointcounter * 10)), (1 * pocet_pixelu, (vyska + 7) * pocet_pixelu),
-                         color="green", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("SETTINGS: ", ((sirka - 3) * pocet_pixelu, (vyska + 1) * pocet_pixelu),
-                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("left, right: a, d", ((sirka - 2) * pocet_pixelu, (vyska + 2) * pocet_pixelu),
-                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("turning: q, e", ((sirka - 2) * pocet_pixelu, (vyska + 3) * pocet_pixelu),
-                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("faster falling: s", ((sirka - 2) * pocet_pixelu, (vyska + 4) * pocet_pixelu),
-                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("port down: w", ((sirka - 2) * pocet_pixelu, (vyska + 5) * pocet_pixelu),
-                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("pause: esc", ((sirka - 2) * pocet_pixelu, (vyska + 6) * pocet_pixelu),
-                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("save: 0; )", ((sirka - 2) * pocet_pixelu, (vyska + 7) * pocet_pixelu),
-                         color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-        if hlidani == 1:
-            aktualnicas = time.time() - casovac
-            cashms = time.strftime("%H:%M:%S", time.gmtime(aktualnicas))
-            milisec = (aktualnicas - math.floor(aktualnicas)) * 1000
-            milisec = math.floor(milisec)
-            screen.draw.text(("time: " + cashms + ":" + str(milisec)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
-                             color="green", fontsize=pocet_pixelu * (24 / 25))
-            konecny_cas = "time: " + cashms + ":" + str(milisec)
-        else:
-            if saved == 0:
-                screen.draw.text("time: 00:00:00:000", (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
-                                 color="green", fontsize=pocet_pixelu * (24 / 25))
+    screen.clear()
+    if not settings:
+        if vypnout:
+            if hlidani:
+                barvy = barva_kompletni
             else:
-                screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+                barvy = barva_mensiho_jasu
+            for y, radek in enumerate(pole):
+                for x, barva in enumerate(radek):
+                    r = Rect((x * pocet_pixelu, y * pocet_pixelu), (pocet_pixelu, pocet_pixelu))
+                    rgb = barvy[barva]
+                    screen.draw.filled_rect(r, (rgb >> 16, (rgb >> 8) & 0xff, rgb & 0xff))
+            zkvyska = vyska0
+            while can_move(zkvyska, sirka0):
+                zkvyska += 1
+            zkvyska -= 1
+            nakresli_kostku(sirka0, zkvyska, 0xdcdcdc)
+            jaka_barva()
+            nakresli_kostku(sirka0, vyska0, barvy[rgb_kostky])
+            for c in range(round(vyska / 4)):
+                vyber_kostky(1, c)
+                jaka_barva_strana()
+                nakresli_kostku_strana(sirka + 1, vyska - 4 - c * 4, barvy[rgb_kostky_strany])
+            screen.draw.text(("destroyed layers: " + str(scitani_rad)), (1 * pocet_pixelu, (vyska + 2.5) * pocet_pixelu),
+                             color="green", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text(("block placed: " + str(scitani_kostek)), (1 * pocet_pixelu, (vyska + 4) * pocet_pixelu),
+                             color="green", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)), (1 * pocet_pixelu, (vyska + 5.5) * pocet_pixelu),
+                             color="green", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text(("points: " + str(pointcounter * 10)), (1 * pocet_pixelu, (vyska + 7) * pocet_pixelu),
+                             color="green", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("SETTINGS: ", ((sirka - 3) * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("left, right: a, d", ((sirka - 2) * pocet_pixelu, (vyska + 2) * pocet_pixelu),
+                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("turning: q, e", ((sirka - 2) * pocet_pixelu, (vyska + 3) * pocet_pixelu),
+                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("faster falling: s", ((sirka - 2) * pocet_pixelu, (vyska + 4) * pocet_pixelu),
+                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("port down: w", ((sirka - 2) * pocet_pixelu, (vyska + 5) * pocet_pixelu),
+                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("pause: esc", ((sirka - 2) * pocet_pixelu, (vyska + 6) * pocet_pixelu),
+                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("save: 0; )", ((sirka - 2) * pocet_pixelu, (vyska + 7) * pocet_pixelu),
+                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
+            screen.blit("setting button.xcf", ((sirka + 6) * pocet_pixelu, 0))
+            if hlidani:
+                aktualnicas = time.time() - casovac
+                cashms = time.strftime("%H:%M:%S", time.gmtime(aktualnicas))
+                milisec = (aktualnicas - math.floor(aktualnicas)) * 1000
+                milisec = math.floor(milisec)
+                screen.draw.text(("time: " + cashms + ":" + str(milisec)), (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
                                  color="green", fontsize=pocet_pixelu * (24 / 25))
-            screen.draw.text("Press SPACE", ((sirka / 10) * pocet_pixelu, (vyska / 2 - 1) * pocet_pixelu), color="black",
-                             fontsize=pocet_pixelu * (sirka * (70 / 15)) / 25)
-    if not vypnout:
-        screen.clear()
-        screen.draw.text("GAME OVER", (2.5 * pocet_pixelu, 2 * pocet_pixelu), color="red", fontsize=pocet_pixelu * 4)
-        screen.draw.text("score:", (2.5 * pocet_pixelu, (vyska - 1) * pocet_pixelu), color="green", fontsize=pocet_pixelu * (40 / 25))
-        screen.draw.text(("destroyed layers: " + str(scitani_rad)),
-                         (2.5 * pocet_pixelu, (vyska + 2.75) * pocet_pixelu), color="green", fontsize=pocet_pixelu)
-        screen.draw.text(("block placed: " + str(scitani_kostek)),
-                         (2.5 * pocet_pixelu, (vyska + 4.5) * pocet_pixelu), color="green", fontsize=pocet_pixelu)
-        screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)),
-                         (2.5 * pocet_pixelu, (vyska + 6.25) * pocet_pixelu), color="green", fontsize=pocet_pixelu)
-        for x in range(2):
-            r = Rect((5 * pocet_pixelu, (8 + x * 6) * pocet_pixelu), (3 * pocet_pixelu, 3 * pocet_pixelu))
+                konecny_cas = "time: " + cashms + ":" + str(milisec)
+            else:
+                if saved == 0:
+                    screen.draw.text("time: 00:00:00:000", (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+                                     color="green", fontsize=pocet_pixelu * (24 / 25))
+                else:
+                    screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
+                                     color="green", fontsize=pocet_pixelu * (24 / 25))
+                screen.draw.text("Press SPACE", ((sirka / 10) * pocet_pixelu, (vyska / 2 - 1) * pocet_pixelu), color="black",
+                                 fontsize=pocet_pixelu * (sirka * (70 / 15)) / 25)
+        if not vypnout:
+            screen.clear()
+            screen.draw.text("GAME OVER", (2.5 * pocet_pixelu, 2 * pocet_pixelu), color="red", fontsize=pocet_pixelu * 4)
+            screen.draw.text("score:", (2.5 * pocet_pixelu, (vyska - 1) * pocet_pixelu), color="green", fontsize=pocet_pixelu * (40 / 25))
+            screen.draw.text(("destroyed layers: " + str(scitani_rad)),
+                             (2.5 * pocet_pixelu, (vyska + 2.75) * pocet_pixelu), color="green", fontsize=pocet_pixelu)
+            screen.draw.text(("block placed: " + str(scitani_kostek)),
+                             (2.5 * pocet_pixelu, (vyska + 4.5) * pocet_pixelu), color="green", fontsize=pocet_pixelu)
+            screen.draw.text(("speed: " + str(vypisovaci_rychlost / 10)),
+                             (2.5 * pocet_pixelu, (vyska + 6.25) * pocet_pixelu), color="green", fontsize=pocet_pixelu)
+            for x in range(2):
+                r = Rect((5 * pocet_pixelu, (8 + x * 6) * pocet_pixelu), (3 * pocet_pixelu, 3 * pocet_pixelu))
+                barviska = (0xff, 0x00, 0x00)
+                screen.draw.filled_rect(r, barviska)
+            barviska = (0x00, 0x00, 0x00)
+            screen.draw.filled_circle((6.5 * pocet_pixelu, 9.5 * pocet_pixelu), pocet_pixelu, barviska)
             barviska = (0xff, 0x00, 0x00)
+            screen.draw.filled_circle((6.5 * pocet_pixelu, 9.5 * pocet_pixelu), 0.8 * pocet_pixelu, barviska)
+            r = Rect((6.125 * pocet_pixelu, 8.2 * pocet_pixelu), (0.75 * pocet_pixelu, pocet_pixelu))
             screen.draw.filled_rect(r, barviska)
-        barviska = (0x00, 0x00, 0x00)
-        screen.draw.filled_circle((6.5 * pocet_pixelu, 9.5 * pocet_pixelu), pocet_pixelu, barviska)
-        barviska = (0xff, 0x00, 0x00)
-        screen.draw.filled_circle((6.5 * pocet_pixelu, 9.5 * pocet_pixelu), 0.8 * pocet_pixelu, barviska)
-        r = Rect((6.125 * pocet_pixelu, 8.2 * pocet_pixelu), (0.75 * pocet_pixelu, pocet_pixelu))
-        screen.draw.filled_rect(r, barviska)
-        barviska = (0x00, 0x00, 0x00)
-        r = Rect((6.4 * pocet_pixelu, 8.375 * pocet_pixelu), (0.2 * pocet_pixelu, 0.75 * pocet_pixelu))
-        screen.draw.filled_rect(r, barviska)
-        screen.draw.filled_circle((6.5 * pocet_pixelu, 15.5 * pocet_pixelu), pocet_pixelu, barviska)
-        barviska = (0xff, 0x00, 0x00)
-        screen.draw.filled_circle((6.5 * pocet_pixelu, 15.5 * pocet_pixelu), 0.8 * pocet_pixelu, barviska)
-        r = Rect((5 * pocet_pixelu, 14 * pocet_pixelu), (1.5 * pocet_pixelu, 1.5 * pocet_pixelu))
-        screen.draw.filled_rect(r, barviska)
-        barviska = (0x00, 0x00, 0x00)
-        for x in range(16):
-            x /= 50
-            screen.draw.line(((6.5 - x) * pocet_pixelu, (14.9 - x) * pocet_pixelu),
-                             ((6.5 - x) * pocet_pixelu, (14.3 + x) * pocet_pixelu), barviska)
-        screen.draw.text("quit", (10 * pocet_pixelu, 8.75 * pocet_pixelu), color="red", fontsize=pocet_pixelu * (45 / 25))
-        screen.draw.text("restart", (10 * pocet_pixelu, 14.75 * pocet_pixelu), color="red", fontsize=pocet_pixelu * (40 / 25))
-        screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green", fontsize=pocet_pixelu * (24 / 25))
+            barviska = (0x00, 0x00, 0x00)
+            r = Rect((6.4 * pocet_pixelu, 8.375 * pocet_pixelu), (0.2 * pocet_pixelu, 0.75 * pocet_pixelu))
+            screen.draw.filled_rect(r, barviska)
+            screen.draw.filled_circle((6.5 * pocet_pixelu, 15.5 * pocet_pixelu), pocet_pixelu, barviska)
+            barviska = (0xff, 0x00, 0x00)
+            screen.draw.filled_circle((6.5 * pocet_pixelu, 15.5 * pocet_pixelu), 0.8 * pocet_pixelu, barviska)
+            r = Rect((5 * pocet_pixelu, 14 * pocet_pixelu), (1.5 * pocet_pixelu, 1.5 * pocet_pixelu))
+            screen.draw.filled_rect(r, barviska)
+            barviska = (0x00, 0x00, 0x00)
+            for x in range(16):
+                x /= 50
+                screen.draw.line(((6.5 - x) * pocet_pixelu, (14.9 - x) * pocet_pixelu),
+                                 ((6.5 - x) * pocet_pixelu, (14.3 + x) * pocet_pixelu), barviska)
+            screen.draw.text("quit", (10 * pocet_pixelu, 8.75 * pocet_pixelu), color="red", fontsize=pocet_pixelu * (45 / 25))
+            screen.draw.text("restart", (10 * pocet_pixelu, 14.75 * pocet_pixelu), color="red", fontsize=pocet_pixelu * (40 / 25))
+            screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green", fontsize=pocet_pixelu * (24 / 25))
+    if settings:
+        screen.draw.text("volume:", (pocet_pixelu, pocet_pixelu / 2), fontsize=40 * (24 / 25))
+        r = Rect((2 * pocet_pixelu, 2 * pocet_pixelu), (pocet_pixelu * (300 / 25), pocet_pixelu))
+        screen.draw.rect(r, (0xff, 0xff, 0xff))
+        screen.draw.text(str(round(mastervolume)), (2 * pocet_pixelu + (pocet_pixelu * (310 / 25)), 2.2 * pocet_pixelu))
+        r = Rect((2 * pocet_pixelu, 2 * pocet_pixelu), (pocet_pixelu * (mastervolume * 3 / 25), pocet_pixelu))
+        screen.draw.filled_rect(r, (0x00, 0x7e, 0xff))
 pgzrun.go()
 
 
