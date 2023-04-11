@@ -28,7 +28,7 @@ pointcounter = 0
 try:
     vzpominani = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "r")
     if vzpominani.readline() != "":
-        saved = 1
+        saved = True
         vzpominani.seek(0)
         vyska = int(vzpominani.readline().strip())
         sirka = int(vzpominani.readline().strip())
@@ -50,7 +50,7 @@ try:
         vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
         vypis.close()
     else:
-        saved = 0
+        saved = False
         pole = []
         for y in range(vyska):
             radek = []
@@ -58,7 +58,7 @@ try:
                 radek.append(0)
             pole.append(radek)
 except FileNotFoundError:
-    saved = 0
+    saved = False
     pole = []
     for y in range(vyska):
         radek = []
@@ -122,7 +122,7 @@ def padani():
 
 
 bodovani = 0
-if saved == 0:
+if not saved:
     scitani_rad = 0
 
 def niceni():
@@ -178,7 +178,7 @@ def konec():
 
 
 
-if saved == 0:
+if not saved:
     for x in range(round(vyska / 4)):
         zasoba_kostek.append(random.randint(0, 6))
 
@@ -231,7 +231,7 @@ def vyber_kostky(kde, kolikata):
     if kde == 1:
         kostka_stranou = nova_kostka
 
-if saved == 0:
+if not saved:
     vyber_kostky(0, 0)
 
 
@@ -252,7 +252,7 @@ def can_move(x, y, co=None):
     return True
 
 
-if saved == 0:
+if not saved:
     rychlostpadu = 100
 
 def rychlost_padu():
@@ -287,7 +287,7 @@ cas_po_pauze = 0
 
 
 def on_key_down(key):
-    global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak, casovac, settings
+    global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak, casovac, settings, saved
     if not settings:
         if vypnout:
             if key == keys.K_0:
@@ -295,7 +295,7 @@ def on_key_down(key):
             if key == keys.SPACE:
                 if not hlidani:
                     casovac = time.time()
-                    if saved == 1:
+                    if saved:
                         casovac -= aktualnicas
                     rychlost_padu()
                     draw()
@@ -332,10 +332,13 @@ def on_key_down(key):
                     rychlost_padu()
                 if key == keys.ESCAPE:
                     clock.unschedule(padani)
+                    saved = True
                     hlidani = False
     if settings:
         if key == keys.ESCAPE:
             settings = False
+            saved = True
+            hlidani = False
 
 
 
@@ -386,7 +389,7 @@ def on_mouse_down(pos):
 
 
 def on_mouse_up():
-    global pohyb_mysi
+    global pohyb_mysi, casovac
     pohyb_mysi = False
 #    music.set_volume(mastervolume / 100)
 
@@ -556,7 +559,7 @@ def draw():
                                  color="green", fontsize=pocet_pixelu * (24 / 25))
                 konecny_cas = "time: " + cashms + ":" + str(milisec)
             else:
-                if saved == 0:
+                if not saved:
                     screen.draw.text("time: 00:00:00:000", (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu),
                                      color="green", fontsize=pocet_pixelu * (24 / 25))
                 else:
@@ -602,8 +605,9 @@ def draw():
             screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green", fontsize=pocet_pixelu * (24 / 25))
     if settings:
         screen.draw.text("volume:", (pocet_pixelu, pocet_pixelu / 2), fontsize=40 * (24 / 25))
-        r = Rect((2 * pocet_pixelu, 2 * pocet_pixelu), (pocet_pixelu * (300 / 25), pocet_pixelu))
-        screen.draw.rect(r, (0xff, 0xff, 0xff))
+        for x in range(3):
+            r = Rect((2 * pocet_pixelu - x, 2 * pocet_pixelu - x), (pocet_pixelu * (300 / 25) + 2 * x, pocet_pixelu + 2 * x))
+            screen.draw.rect(r, (0xff, 0xff, 0xff))
         screen.draw.text(str(round(mastervolume)), (2 * pocet_pixelu + (pocet_pixelu * (310 / 25)), 2.2 * pocet_pixelu))
         r = Rect((2 * pocet_pixelu, 2 * pocet_pixelu), (pocet_pixelu * (mastervolume * 3 / 25), pocet_pixelu))
         screen.draw.filled_rect(r, (0x00, 0x7e, 0xff))
