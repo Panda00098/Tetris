@@ -11,9 +11,9 @@ sirka = 15
 vyska = 21  # 21
 pocet_pixelu = 25
 
-music.play("minefield")
+music.play("ok")
 music.set_volume(0.1)
-
+pohyby = [97, 100, 113, 101, 115, 119, 27, 48, 32]
 
 kostka = []
 
@@ -30,6 +30,7 @@ try:
     if vzpominani.readline() != "":
         saved = True
         vzpominani.seek(0)
+        pohyby = []
         vyska = int(vzpominani.readline().strip())
         sirka = int(vzpominani.readline().strip())
         for y in range(vyska):
@@ -47,6 +48,7 @@ try:
         scitani_kostek = int(vzpominani.readline().strip())
         pady = int(vzpominani.readline().strip())
         pointcounter = int(vzpominani.readline().strip())
+        pohyby.append(list(map(int, vzpominani.readline().strip().split())))
         vypis = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "w")
         vypis.close()
     else:
@@ -281,41 +283,46 @@ zrychli_pohyb = False
 pamatovak = 0
 vypnout = True
 cas_po_pauze = 0
+escaped = False
 
 
-
-
+pohyby_pomoc = 0
 
 def on_key_down(key):
-    global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak, casovac, settings, saved
+    global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak, casovac, settings, saved, escaped, pohyby_pomoc, misto_kliku_v_settings
+    print(key)
     if not settings:
         if vypnout:
-            if key == keys.K_0:
+            if key == pohyby[7]:
                 ukladani_do_souboru()
-            if key == keys.SPACE:
+            if key == pohyby[8]:
                 if not hlidani:
                     casovac = time.time()
-                    if saved:
+                    if saved or escaped:
                         casovac -= aktualnicas
                     rychlost_padu()
                     draw()
                     hlidani = True
             if hlidani:
-                if key == keys.A or key == keys.LEFT:
+                if key == pohyby[0]:
                     pohyb_do_stran_vlevo()
                     clock.schedule_interval(pohyb_do_stran_vlevo, 0.15)
-                if key == keys.D or key == keys.RIGHT:
+                if key == pohyby[1]:
                     pohyb_do_stran_vpravo()
                     clock.schedule_interval(pohyb_do_stran_vpravo, 0.15)
-                if key == keys.E:
-                    otocka = otoc_kostku(1)
-                    if can_move(vyska0, sirka0, otocka):
-                        kostka = otocka
-                if key == keys.Q:
+                if key == pohyby[2]:
                     otocka = otoc_kostku(-1)
                     if can_move(vyska0, sirka0, otocka):
                         kostka = otocka
-                if key == keys.W:
+                if key == pohyby[3]:
+                    otocka = otoc_kostku(1)
+                    if can_move(vyska0, sirka0, otocka):
+                        kostka = otocka
+                if key == pohyby[4]:
+                    pamatovak = rychlostpadu
+                    rychlostpadu = 5
+                    rychlost_padu()
+                if key == pohyby[5]:
                     pad = 0
                     koncime = 0
                     while koncime != 1:
@@ -326,19 +333,34 @@ def on_key_down(key):
                             koncime = 1
                             vyska0 += pad
                     clock.schedule(padani, 0.2)
-                if key == keys.S:
-                    pamatovak = rychlostpadu
-                    rychlostpadu = 5
-                    rychlost_padu()
-                if key == keys.ESCAPE:
+                if key == pohyby[6]:
                     clock.unschedule(padani)
-                    saved = True
+                    escaped = True
                     hlidani = False
     if settings:
-        if key == keys.ESCAPE:
-            settings = False
-            saved = True
-            hlidani = False
+        if misto_kliku_v_settings == 0.1:
+            if key == pohyby[6]:
+                settings = False
+                if pady > 0:
+                    escaped = True
+                    hlidani = False
+        else:
+            print(misto_kliku_v_settings)
+            if misto_kliku_v_settings == 0:
+                pohyby[pohyby_pomoc] = key
+                if pohyby_pomoc == 1:
+                    misto_kliku_v_settings = 0.1
+                    pohyby_pomoc = -1
+                pohyby_pomoc += 1
+            if misto_kliku_v_settings == 1:
+                pohyby[pohyby_pomoc + 2] = key
+                if pohyby_pomoc == 1:
+                    misto_kliku_v_settings = 0.1
+                    pohyby_pomoc = -1
+                pohyby_pomoc += 1
+            if misto_kliku_v_settings > 1:
+                pohyby[misto_kliku_v_settings + 2] = key
+                misto_kliku_v_settings = 0.1
 
 
 
@@ -350,12 +372,12 @@ def on_key_up(key):
     global rychlostpadu
     if vypnout:
         if hlidani:
-            if key == keys.S:
+            if key == pohyby[4]:
                 rychlostpadu = pamatovak
                 rychlost_padu()
-            if key == keys.A or key == keys.LEFT:
+            if key == pohyby[1]:
                 clock.unschedule(pohyb_do_stran_vlevo)
-            if key == keys.D or key == keys.RIGHT:
+            if key == pohyby[0]:
                 clock.unschedule(pohyb_do_stran_vpravo)
 
 
@@ -363,8 +385,9 @@ settings = False
 mastervolume = 50
 music.set_volume(mastervolume / 100)
 pohyb_mysi = False
+misto_kliku_v_settings = 0.1
 def on_mouse_down(pos):
-    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost, casovac, settings, mastervolume, pohyb_mysi
+    global vypnout, pady, scitani_kostek, scitani_rad, rychlostpadu, vypisovaci_rychlost, casovac, settings, mastervolume, pohyb_mysi, misto_kliku_v_settings
     if not settings:
         if not vypnout:
             if 5 * pocet_pixelu < pos[0] < 8 * pocet_pixelu < pos[1] < 11 * pocet_pixelu:
@@ -386,12 +409,20 @@ def on_mouse_down(pos):
         if 3 * pocet_pixelu > pos[1] > 2 * pocet_pixelu < pos[0] < pocet_pixelu * (300 / 25) + 2 * pocet_pixelu:
             mastervolume = (pos[0] - 2 * pocet_pixelu) / 3
             pohyb_mysi = True
+        for y in range(3):
+            for x in range(2):
+                if (2 * pocet_pixelu + x * 250 / 25 * pocet_pixelu) < pos[0] < (2 * pocet_pixelu + x * 250 / 25 *
+                        pocet_pixelu + pocet_pixelu * (200 / 25)) and (5.5 * pocet_pixelu + y * 1.5 * pocet_pixelu) < pos[1] < (5.5 *
+                        pocet_pixelu + y * 1.5 * pocet_pixelu + pocet_pixelu):
+                    misto_kliku_v_settings = y * 2 + x
+                    break
+
 
 
 def on_mouse_up():
     global pohyb_mysi, casovac
     pohyb_mysi = False
-#    music.set_volume(mastervolume / 100)
+    music.set_volume(mastervolume / 100)
 
 
 def on_mouse_move(pos):
@@ -424,6 +455,8 @@ def ukladani_do_souboru():
     vypis.write(" ".join(map(str, zasoba_kostek)) + "\n")
     vypis.write(str(rychlostpadu) + "\n" + str(vypisovaci_rychlost) + "\n" + konecny_cas + "\n" + str(aktualnicas) + "\n" + str(
             scitani_rad) + "\n" + str(scitani_kostek) + "\n" + str(pady) + "\n" + str(pointcounter) + "\n")
+    ukladani = " ".join(map(str, pohyby)) + "\n"
+    vypis.write(ukladani)
     vypis.close()
     sys.exit("saved")
 
@@ -535,21 +568,7 @@ def draw():
                              color="green", fontsize=pocet_pixelu * (24 / 25))
             screen.draw.text(("points: " + str(pointcounter * 10)), (1 * pocet_pixelu, (vyska + 7) * pocet_pixelu),
                              color="green", fontsize=pocet_pixelu * (24 / 25))
-            screen.draw.text("SETTINGS: ", ((sirka - 3) * pocet_pixelu, (vyska + 1) * pocet_pixelu),
-                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-            screen.draw.text("left, right: a, d", ((sirka - 2) * pocet_pixelu, (vyska + 2) * pocet_pixelu),
-                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-            screen.draw.text("turning: q, e", ((sirka - 2) * pocet_pixelu, (vyska + 3) * pocet_pixelu),
-                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-            screen.draw.text("faster falling: s", ((sirka - 2) * pocet_pixelu, (vyska + 4) * pocet_pixelu),
-                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-            screen.draw.text("port down: w", ((sirka - 2) * pocet_pixelu, (vyska + 5) * pocet_pixelu),
-                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-            screen.draw.text("pause: esc", ((sirka - 2) * pocet_pixelu, (vyska + 6) * pocet_pixelu),
-                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-            screen.draw.text("save: 0; )", ((sirka - 2) * pocet_pixelu, (vyska + 7) * pocet_pixelu),
-                             color="dimgray", fontsize=pocet_pixelu * (24 / 25))
-            screen.blit("setting button.xcf", ((sirka + 6) * pocet_pixelu, 0))
+            screen.blit("setting button.xcf", (WIDTH - 56, 0))
             if hlidani:
                 aktualnicas = time.time() - casovac
                 cashms = time.strftime("%H:%M:%S", time.gmtime(aktualnicas))
@@ -600,17 +619,66 @@ def draw():
                 x /= 50
                 screen.draw.line(((6.5 - x) * pocet_pixelu, (14.9 - x) * pocet_pixelu),
                                  ((6.5 - x) * pocet_pixelu, (14.3 + x) * pocet_pixelu), barviska)
-            screen.draw.text("quit", (10 * pocet_pixelu, 8.75 * pocet_pixelu), color="red", fontsize=pocet_pixelu * (45 / 25))
-            screen.draw.text("restart", (10 * pocet_pixelu, 14.75 * pocet_pixelu), color="red", fontsize=pocet_pixelu * (40 / 25))
-            screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green", fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("quit", (10 * pocet_pixelu, 8.75 * pocet_pixelu), color="red",
+                             fontsize=pocet_pixelu * (45 / 25))
+            screen.draw.text("restart", (10 * pocet_pixelu, 14.75 * pocet_pixelu), color="red",
+                             fontsize=pocet_pixelu * (40 / 25))
+            screen.draw.text(konecny_cas, (1 * pocet_pixelu, (vyska + 1) * pocet_pixelu), color="green",
+                             fontsize=pocet_pixelu * (24 / 25))
     if settings:
-        screen.draw.text("volume:", (pocet_pixelu, pocet_pixelu / 2), fontsize=40 * (24 / 25))
+        screen.draw.text("volume:", (pocet_pixelu, pocet_pixelu / 2), fontsize=pocet_pixelu * (40 / 25))
         for x in range(3):
             r = Rect((2 * pocet_pixelu - x, 2 * pocet_pixelu - x), (pocet_pixelu * (300 / 25) + 2 * x, pocet_pixelu + 2 * x))
             screen.draw.rect(r, (0xff, 0xff, 0xff))
-        screen.draw.text(str(round(mastervolume)), (2 * pocet_pixelu + (pocet_pixelu * (310 / 25)), 2.2 * pocet_pixelu))
+        screen.draw.text(str(round(mastervolume)), (2 * pocet_pixelu + (pocet_pixelu * (310 / 25)), 2.2 * pocet_pixelu),
+                         fontsize=pocet_pixelu * (24 / 25))
         r = Rect((2 * pocet_pixelu, 2 * pocet_pixelu), (pocet_pixelu * (mastervolume * 3 / 25), pocet_pixelu))
         screen.draw.filled_rect(r, (0x00, 0x7e, 0xff))
+        for y in range(3):
+            for x in range(2):
+                for z in range(3):
+                    r = Rect((2 * pocet_pixelu - z + x * 250 / 25 * pocet_pixelu, 5.5 * pocet_pixelu - z + y * 1.5 *
+                              pocet_pixelu), (pocet_pixelu * (200 / 25) + 2 * z, pocet_pixelu + 2 * z))
+                    screen.draw.rect(r, (0xff, 0xff, 0xff))
+        if misto_kliku_v_settings != 0.1:
+            if misto_kliku_v_settings / 2 - round(misto_kliku_v_settings / 2) != 0:
+                y = misto_kliku_v_settings / 2 - 0.5
+                r = Rect((2 * pocet_pixelu + 250 / 25 * pocet_pixelu, 5.5 * pocet_pixelu + y * 1.5 * pocet_pixelu),
+                         (pocet_pixelu * (200 / 25), pocet_pixelu))
+                screen.draw.filled_rect(r, (0x00, 0x00, 0xff))
+            else:
+                y = misto_kliku_v_settings / 2
+                r = Rect((2 * pocet_pixelu, 5.5 * pocet_pixelu + y * 1.5 * pocet_pixelu),
+                         (pocet_pixelu * (200 / 25), pocet_pixelu))
+                screen.draw.filled_rect(r, (0x00, 0x00, 0xff))
+        screen.draw.text("settings: ", (pocet_pixelu, 4 * pocet_pixelu),
+                         fontsize=pocet_pixelu * (40 / 25))
+#        if misto_kliku_v_settings == 0 or misto_kliku_v_settings == 1:
+#            if pohyby_pomoc == 0:
+#                screen.draw.text("left:  " + chr(pohyby[misto_kliku_v_settings * 2]), (2.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+#                                 fontsize=pocet_pixelu * (24 / 25))
+#            else:
+#                screen.draw.text("right:  " + chr(pohyby[misto_kliku_v_settings * 2]), (2.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+#                                 fontsize=pocet_pixelu * (24 / 25))
+#        if misto_kliku_v_settings != 0:
+#            screen.draw.text("side-move:  " + chr(pohyby[0]) + ", " + chr(pohyby[1]), (2.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+#                             fontsize=pocet_pixelu * (24 / 25))
+#        if misto_kliku_v_settings != 1:
+#            screen.draw.text("turning:  " + chr(pohyby[2]) + ", " + chr(pohyby[3]), (12.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+#                             fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("side-move:  " + chr(pohyby[0]) + ", " + chr(pohyby[1]), (2.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                         fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("turning:  " + chr(pohyby[2]) + ", " + chr(pohyby[3]),(12.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                         fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("faster_falling:  " + chr(pohyby[4]), (2.5 * pocet_pixelu, 7.2 * pocet_pixelu),
+                         fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("port_down:  " + chr(pohyby[5]), (12.5 * pocet_pixelu, 7.2 * pocet_pixelu),
+                         fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("pause:  " + chr(pohyby[6]), (2.5 * pocet_pixelu, 8.7 * pocet_pixelu),
+                         fontsize=pocet_pixelu * (24 / 25))
+        screen.draw.text("save:  " + chr(pohyby[7]), (12.5 * pocet_pixelu, 8.7 * pocet_pixelu),
+                         fontsize=pocet_pixelu * (24 / 25))
+
 pgzrun.go()
 
 
