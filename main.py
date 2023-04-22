@@ -25,6 +25,7 @@ zasoba_kostek = []
 pointcounter = 0
 
 
+
 try:
     vzpominani = open(f"{os.path.dirname(__file__)}\\saved_tetris.txt", "r")
     if vzpominani.readline() != "":
@@ -290,7 +291,6 @@ pohyby_pomoc = 0
 
 def on_key_down(key):
     global sirka0, kostka, vyska0, hlidani, rychlostpadu, pamatovak, casovac, settings, saved, escaped, pohyby_pomoc, misto_kliku_v_settings
-    print(key)
     if not settings:
         if vypnout:
             if key == pohyby[7]:
@@ -341,11 +341,10 @@ def on_key_down(key):
         if misto_kliku_v_settings == 0.1:
             if key == pohyby[6]:
                 settings = False
-                if pady > 0:
+                if hlidani:
                     escaped = True
                     hlidani = False
         else:
-            print(misto_kliku_v_settings)
             if misto_kliku_v_settings == 0:
                 pohyby[pohyby_pomoc] = key
                 if pohyby_pomoc == 1:
@@ -359,7 +358,7 @@ def on_key_down(key):
                     pohyby_pomoc = -1
                 pohyby_pomoc += 1
             if misto_kliku_v_settings > 1:
-                pohyby[misto_kliku_v_settings + 2] = key
+                pohyby[int(misto_kliku_v_settings + 2)] = key
                 misto_kliku_v_settings = 0.1
 
 
@@ -375,14 +374,14 @@ def on_key_up(key):
             if key == pohyby[4]:
                 rychlostpadu = pamatovak
                 rychlost_padu()
-            if key == pohyby[1]:
-                clock.unschedule(pohyb_do_stran_vlevo)
             if key == pohyby[0]:
+                clock.unschedule(pohyb_do_stran_vlevo)
+            if key == pohyby[1]:
                 clock.unschedule(pohyb_do_stran_vpravo)
 
 
 settings = False
-mastervolume = 50
+mastervolume = 15
 music.set_volume(mastervolume / 100)
 pohyb_mysi = False
 misto_kliku_v_settings = 0.1
@@ -401,7 +400,7 @@ def on_mouse_down(pos):
                 vypnout = True
                 casovac = time.time()
                 clock.schedule_interval(padani, rychlostpadu / 100)
-        q = [(sirka + 6) * pocet_pixelu + 28, 28]
+        q = [WIDTH - 28, 28]
         if math.dist(pos, q) <= 28:
             settings = True
             clock.unschedule(padani)
@@ -666,18 +665,68 @@ def draw():
 #        if misto_kliku_v_settings != 1:
 #            screen.draw.text("turning:  " + chr(pohyby[2]) + ", " + chr(pohyby[3]), (12.5 * pocet_pixelu, 5.7 * pocet_pixelu),
 #                             fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("side-move:  " + chr(pohyby[0]) + ", " + chr(pohyby[1]), (2.5 * pocet_pixelu, 5.7 * pocet_pixelu),
-                         fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("turning:  " + chr(pohyby[2]) + ", " + chr(pohyby[3]),(12.5 * pocet_pixelu, 5.7 * pocet_pixelu),
-                         fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("faster_falling:  " + chr(pohyby[4]), (2.5 * pocet_pixelu, 7.2 * pocet_pixelu),
-                         fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("port_down:  " + chr(pohyby[5]), (12.5 * pocet_pixelu, 7.2 * pocet_pixelu),
-                         fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("pause:  " + chr(pohyby[6]), (2.5 * pocet_pixelu, 8.7 * pocet_pixelu),
-                         fontsize=pocet_pixelu * (24 / 25))
-        screen.draw.text("save:  " + chr(pohyby[7]), (12.5 * pocet_pixelu, 8.7 * pocet_pixelu),
-                         fontsize=pocet_pixelu * (24 / 25))
+        escape_button_detected = 0.1
+        for x in range(9):
+            if pohyby[x] == 27:
+                escape_button_detected = x
+        if escape_button_detected != 0.1:
+            if escape_button_detected == 0 or escape_button_detected == 1:
+                if escape_button_detected == 0:
+                    screen.draw.text("side-move:  " + "escape" + ", " + chr(pohyby[1]), (2.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                                     fontsize=pocet_pixelu * (24 / 25))
+                else:
+                    screen.draw.text("side-move:  " + chr(pohyby[0]) + ", " + "escape", (2.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                                     fontsize=pocet_pixelu * (24 / 25))
+            else:
+                screen.draw.text("side-move:  " + chr(pohyby[0]) + ", " + chr(pohyby[1]), (2.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+            if escape_button_detected == 2 or escape_button_detected == 3:
+                if escape_button_detected == 2:
+                    screen.draw.text("turning:  " + "escape" + ", " + chr(pohyby[3]),(12.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                                     fontsize=pocet_pixelu * (24 / 25))
+                else:
+                    screen.draw.text("turning:  " + chr(pohyby[2]) + ", " + "escape", (12.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                                     fontsize=pocet_pixelu * (24 / 25))
+            else:
+                screen.draw.text("turning:  " + chr(pohyby[2]) + ", " + chr(pohyby[3]), (12.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+            if escape_button_detected == 4:
+                screen.draw.text("faster_falling:  " + "escape", (2.5 * pocet_pixelu, 7.2 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+            else:
+                screen.draw.text("faster_falling:  " + chr(pohyby[4]), (2.5 * pocet_pixelu, 7.2 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+            if escape_button_detected == 5:
+                screen.draw.text("port_down:  " + "escape", (12.5 * pocet_pixelu, 7.2 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+            else:
+                screen.draw.text("port_down:  " + chr(pohyby[5]), (12.5 * pocet_pixelu, 7.2 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+            if escape_button_detected == 6:
+                screen.draw.text("pause:  " + "escape", (2.5 * pocet_pixelu, 8.7 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+            else:
+                screen.draw.text("pause:  " + chr(pohyby[6]), (2.5 * pocet_pixelu, 8.7 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+            if escape_button_detected == 7:
+                screen.draw.text("save:  " + "escape", (12.5 * pocet_pixelu, 8.7 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+            else:
+                screen.draw.text("save:  " + chr(pohyby[7]), (12.5 * pocet_pixelu, 8.7 * pocet_pixelu),
+                                 fontsize=pocet_pixelu * (24 / 25))
+        else:
+            screen.draw.text("side-move:  " + chr(pohyby[0]) + ", " + chr(pohyby[1]), (2.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                             fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("turning:  " + chr(pohyby[2]) + ", " + chr(pohyby[3]),(12.5 * pocet_pixelu, 5.7 * pocet_pixelu),
+                             fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("faster_falling:  " + chr(pohyby[4]), (2.5 * pocet_pixelu, 7.2 * pocet_pixelu),
+                             fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("port_down:  " + chr(pohyby[5]), (12.5 * pocet_pixelu, 7.2 * pocet_pixelu),
+                             fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("pause:  " + chr(pohyby[6]), (2.5 * pocet_pixelu, 8.7 * pocet_pixelu),
+                             fontsize=pocet_pixelu * (24 / 25))
+            screen.draw.text("save:  " + chr(pohyby[7]), (12.5 * pocet_pixelu, 8.7 * pocet_pixelu),
+                             fontsize=pocet_pixelu * (24 / 25))
 
 pgzrun.go()
 
